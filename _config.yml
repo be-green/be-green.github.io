@@ -1,0 +1,36 @@
+# Site settings
+title:          Brice Green's Blog
+description:    "Economist, developer, musician"
+baseurl:        ""
+url:            "https://be-green.github.io"
+
+# Author
+author:
+  name:         Brice
+  url:          https://be-green.github.io
+  email:        brice.c.green@gmail.com
+  github:       github.com/be-green
+
+# Build settings
+markdown:       kramdown
+include:
+  - _pages
+
+# Assets
+sass:
+  sass_dir:     _sass
+  style:        compressed
+
+# Gems
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jekyll-seo-tag
+  # - jemoji #Uncomment this to allow emoji in your post
+
+# Permalinks
+permalink:      /:year-:month-:day/:title
+paginate:       5
+
+# Excludes
+exclude: [ Gemfile, Gemfile.lock, tale.gemspec ]
