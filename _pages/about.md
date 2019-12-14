@@ -7,7 +7,7 @@ permalink: /about/
 
 I'm an economist, software developer, and musician. I worked for four years at Capital Group, an active investment manager, on a team of data scientists and quantitative finance practitioners. I am currently a masters student at the University of Texas at Austin, and a research assistant for Russ Wermers at University of Maryland. This coming summer I will be a pre-doctoral research associate at the Massachussetts Institute of Technology in the finance department.
 
-I very much enjoy playing music and cooking, and I dream about one day getting a dog.
+I enjoy playing music and cooking, and I dream about one day getting a dog.
 
 # Projects
 
@@ -18,7 +18,7 @@ I very much enjoy playing music and cooking, and I dream about one day getting a
 
 ## Papers
 
-- [Multilevel Models and the Cross-Section of Stock Returns]()
+- [Multilevel Models and the Cross-Section of Stock Returns](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3411358)
 
 # Skills
 

@@ -10,9 +10,9 @@ One of the things I see beginners of any programming language struggling with mo
 
 First, you need to remember that literally every single developer searches the internet for answer to problems that they face on a daily basis. Every single one. If we added this question to the census I would not be surprised to find out that literally 100% of people who currently develop software have searched for answers on the internet. I would bet that most (if not all of them) have simply pasted the solution into their code without understanding what it does at all!
 
-Obviously in a production software setting this is not ideal, but for a quick workaround it can be great. I am willing to admit that my regex skills are no match for [this guy's]() who provided this nice solution for finding dates in strings:
+Obviously in a production software setting this is not ideal, but for a quick workaround it can be great. I am willing to admit that my regex skills are no match for [this guy's](https://stackoverflow.com/a/15504877/7158451) who provided this nice regex for finding dates in strings:
 
-
+^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$
 
 Do I understand it? No! Could I understand it given enough time? Probably? Do I need to? Depends on the context! So don't feel bad about it.
 
@@ -44,7 +44,7 @@ The second place you should look is official language or system documentation. T
 ?proc.time
 ```
 
-(Sidenote: in real life use the [microbenchmark]() package for doing stuff like this)
+(Sidenote: in real life use the [microbenchmark](https://cran.r-project.org/web/packages/microbenchmark/microbenchmark.pdf) package for doing stuff like this)
 
 The main problem with understanding documentation for beginners is that it is written by software developers. This is kind of like reading statistics papers in a field that you've never taken a class in (or maybe just any statistics paper). There's all these matrices and you sit down and try to copy the math into your notebook to follow it but then you hit a section and have to go **HOW ARE THOSE THE SAME THING**? How did that happen?
 
