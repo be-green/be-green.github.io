@@ -12,7 +12,9 @@ First, you need to remember that literally every single developer searches the i
 
 Obviously in a production software setting this is not ideal, but for a quick workaround it can be great. I am willing to admit that my regex skills are no match for [this guy's](https://stackoverflow.com/a/15504877/7158451) who provided this nice regex for finding dates in strings:
 
+```
 ^(?:(?:31(\/|-|\.)(?:0?[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0?[13-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29(\/|-|\.)0?2\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0?[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$
+```
 
 Do I understand it? No! Could I understand it given enough time? Probably? Do I need to? Depends on the context! So don't feel bad about it.
 
