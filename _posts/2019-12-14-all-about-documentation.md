@@ -6,7 +6,7 @@ tags: programming, R, beginning
 
 One of the things I see beginners of any programming language struggling with most is the seemingly endless stream of knowledge that they need to have in order to code properly. Documentation is seemingly useless and far too technical to follow, especially if you just learned what a variable is. And error messages like `object of type closure is not subsettable` are beyond cryptic. 
 
-## Everybody Poops
+## Everybody Googles
 
 First, you need to remember that literally every single developer searches the internet for answer to problems that they face on a daily basis. Every single one. If we added this question to the census I would not be surprised to find out that literally 100% of people who currently develop software have searched for answers on the internet. I would bet that most (if not all of them) have simply pasted the solution into their code without understanding what it does at all!
 
