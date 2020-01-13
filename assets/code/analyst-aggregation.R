@@ -51,3 +51,21 @@ effect_plot(meta_fit) +
   theme_grey() +
   guides(fill = F)
 
+pooling_comparison <-
+  baggr_compare(us_eq_forecasts,
+              prior_hypermean = normal(0.08, 0.2),
+              prior_hypersd = cauchy(0, 0.05),
+              control = list(adapt_delta = 0.9),
+              what = "pooling")
+
+pp <- treatment_effect(pooling_comparison$models$partial)
+fp <- treatment_effect(pooling_comparison$models$full)
+
+data.table(
+  model =
+    c(rep("Fully Pooled", 4000),rep("Hierarchical", 4000)),
+  draws = c(fp$tau, pp$tau)
+) %>%
+  ggplot(aes(x = draws, fill = model)) +
+  geom_density(alpha = 0.8) +
+  ggtitle("Comparison of Latent Forecast Means")
