@@ -25,7 +25,7 @@ get_prices <- function(symbols) {
 
 # S&P 500, Russell 2k, 90 day treasuries,
 # 5 year treasuries, 10 year treasuries, 30 year treasuries,
-idx <- c("^GSPC","^RLV","^RLG", "^RUT", "^IRX",
+idx <- c("^GSPC", "^RLV","^RLG","^RUT", "^IRX",
          "^FVX", "^TNX", "^TYX")
 
 # a couple random mutual funds
@@ -81,6 +81,10 @@ rrep <- extract(amcap_fit, "R_rep")$R_rep
 
 betas <- extract(amcap_fit, "beta")
 
+nms <- names(correlated_amcap_fit)
+nms[which(nms %like% "beta")] <- colnames(idx_returns)
+
+
 betas <- data.table(betas$beta)
 setnames(betas, colnames(betas), colnames(idx_returns))
 
@@ -99,9 +103,9 @@ cor_idx_ret <- calc_returns(idx)
 
 amcap_style_data <-
   make_standata(fund_returns$AMCPX,
-                cor_idx_ret)
+                idx_returns)
 
-amcap_fit <- sampling(style_reg, data = amcap_style_data)
+amcap_fit <- optimizing(style_reg, data = amcap_style_data)
 
 betas <- extract(amcap_fit, "beta")
 
