@@ -24,7 +24,7 @@ $R = \beta X + \epsilon$
 
 where there is a point-mass prior on the sum of $\beta$, e.g.
 
-$p(\Sigma_{i=1}^k \beta = 1) = 1$
+$P(\Sigma_{i=1}^k \beta = 1) = 1$
 
 and a uniform constraint on each $\beta_i$ such that
 
