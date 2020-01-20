@@ -84,7 +84,6 @@ betas <- extract(amcap_fit, "beta")
 nms <- names(correlated_amcap_fit)
 nms[which(nms %like% "beta")] <- colnames(idx_returns)
 
-
 betas <- data.table(betas$beta)
 setnames(betas, colnames(betas), colnames(idx_returns))
 
@@ -119,3 +118,9 @@ melt(betas, "Index") %>%
   geom_density(fill = "#009ADF") +
   facet_wrap(~variable, scales = "free_y")
 
+
+rrep <- extract(correlated_amcap_fit, "R_rep")
+
+r <- amcap_style_data$R
+
+bayesplot::ppc_dens_overlay(r, rrep$R_rep)
