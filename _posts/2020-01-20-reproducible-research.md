@@ -4,19 +4,17 @@ title: Reproducible Research Tools and Good Data Practices
 tags: pedagogy, R
 ---
 
-I've been thinking that a good framework for the first few classes is around reproducible research and data. In many ways these are core skills which are completely overlooked in traditional coursework. It also seems like while this is a foundational aspect of collaboration and science, it is really not rewarded in the academic sphere. By contrast, in the corporate or data science world it is considered absolutely fundamental! If no one can replicate your model, how should we go about deploying it? For a large-scale implementation of a statistical model or piece of software, we need to understand everything from the data pipeline to the actual trained model, the update cycle, the associated machine's image, how it will scale, how it works with the user, and on and on.
+I'm going to be running a set of classes focused on programming and working with data (think intro to data science, but really just on data and not modeling). In many ways, keeping track of and managing data and code are core functions of research that are largely ignored by traditional coursework. While the process of sharing data, code, papers, and presentations is a foundational aspect of collaboration and science, publishing on the topic is really not rewarded in the academic sphere. By contrast, in the corporate or data science world it is considered absolutely essential! If no one can replicate your model, how should we go about deploying it? For a large-scale implementation of a statistical model or piece of software, we need to understand everything from the data pipeline to the actual trained model, the update cycle, the associated machine's image, how it will scale, how it works with the user, and on and on.
 
 But the considerations for a researcher are quite different. Fewer people use your tools, and the standard for how people interact with them is really not the same. For example, the most used tools in academic finance are packaged as data files and sent out in bulk. There is no streaming set of interactions that the model needs to cope with like you would find in a web interface for email autocomplete, for example. The model is not deployed with an API that users can ping at any time with online updates. If someone does use your software, we expect them to be sophisticated or persistent enough to figure out how to work with it.
 
-At the same time, there are serious issues with the life of academic projects that can be addressed with tools we borrow from the corporate sphere. Projects often involve a series of research assistants who have limited familiarity with the tools at hand, and the individuals involved may graduate or move in the mean-time. Collaborators are often at different institutions without shared access to data, or change institutions altogether and want to bring their work with them. When they do have shared access to data, often there are copious numbers of intermediate files that get generated through the project, and these go largely undocumented. This is not an accusation against others, but inward reflection on my own work. I often wonder whether anyone is even going to look at this stuff besides me, and as a consequence I really don't bother creating any kind of documentation.
+At the same time, there are serious issues with the life of academic projects that can be addressed with tools we borrow from the corporate sphere. Projects often involve a series of research assistants who have limited familiarity with the tools at hand, and the individuals involved may graduate or move before a project is finished. Collaborators are often at different institutions without shared access to data. Authors change institutions altogether and want to bring their work with them. When collaborators do have shared access to data, often there are copious numbers of intermediate files that get generated through the project, and these go largely undocumented. 
 
-This is a pretty specific set of challenges without as neat a set of tools as might exist at a Google or a Netflix. However, there are still really great (often free) resources for dealing with this stuff. In this post I'm going to try to layout the framework for how I think about my projects, what tools I use to reinforce that framework, and how that has worked for me thus far.
+This is a pretty specific set of challenges without as neat a set of tools as might exist at a Google or a Netflix. However, there are still really great (often free) resources for dealing with this stuff. In this post I'm going to try to think through what tools I might want to cover in the coming weeks, and a framework for thinking about their use in the research process.
 
 # Basic tools
 
-A brief discussion.
-
-If someone is going to be at all empirical, it is more and more important for them to understand how to work with and scale computation and data. Here are some things I think it is good to be familiar with as a researcher which no one teaches you in school:
+If a researcher is going to be empirical, it is critical for them to understand data and associated computation. Here are some things I think it is good to be familiar with as a researcher which no one teaches you in school:
 
 * Basic command line for PC/Linux/Mac (directories, search paths, environment variables)
 * Data concepts like key-value pairs, unique identifiers, joining datasets
@@ -29,15 +27,17 @@ If someone is going to be at all empirical, it is more and more important for th
 
 This may seem (either) like a) this is all really obvious and doesn't everyone do this or b) this all seems like stuff that isn't really very important to me. However, I would note that I have seen a large number of people saving almost everything to their documents folder without any real structure. Or a project with 100 file paths to keep track of, each of which is hard-coded into all of the scripts. Or massive excel files that are being used as data stores. I can't say I've never been guilty of this, but that's why I think it's important (even at an undergraduate level) to be arming people with this type of knowledge!
 
-I guess I'm kind of rambling here, but I need to figure out how I am going to structure a bi-weekly class on this topic, so let's start with a framework.
+I guess I'm kind of rambling here, but I need to figure out how I am going to structure a  class on this topic, so let's start with a framework.
 
 # A framework
 
-A research project is relatively amorphous, with exploratory analysis sometimes creating subsequent data collection, methods changing as people get added on, a sudden scramble to address important feedback. The fact that often research projects take place over the course of years makes this even harder. The basic framework I'm proposing may need to be changed given your specific needs, but I think it encompasses a fair amount of projects. Let's start with principles:
+A research project is relatively amorphous, with exploratory analysis sometimes creating subsequent data collection, methods changing as people get added on, a sudden scramble to address important feedback. The fact that projects take place over the course of years makes this even harder. The basic framework I'm proposing may need to be changed given your specific needs, but I think it encompasses a fair amount of projects. 
+
+Let's start with principles:
 
 1. Never touch your raw data directly
 
-This means save it in a well-known format that is consistent across operating systems, like a .csv or .txt file. If you are feeling ambitious, consider using a lightweight SQL implementation like [sqlite]().
+This means save it in a well-known format that is consistent across operating systems, like a .csv or .txt file. If you are feeling ambitious, consider using a lightweight SQL implementation like [sqlite](https://sqlite.org/index.html).
 
 2. Assert and check expectations about your data
 
@@ -57,7 +57,7 @@ Have plots that regularly visualize your raw data at intermediate steps to help 
 
 6. Use real version control
 
-Whether this is git or perforce or SVN or whatever, version control your project! No, this does not mean saving file_v1.py.
+Whether this is git or perforce or SVN or whatever, version control your project! No, this does not mean saving model_v2.py.
 
 # Research as a pipeline
 
@@ -93,11 +93,11 @@ There should be a folder that contains our outputs. If we have different kinds o
 
 Documentation:
 
-Document to the extent it is useful. Try to make things easy to understand, but also recognize that others may still find confusing what is clear to you. At the very least, there should be a single file which demonstrates which files do what, what data is contained in the various files, and so on. This is excruciatingly painful, but very important.
+Document to the extent it is useful. Try to make things easy to understand, but also recognize that others may still find confusing what is clear to you. At the very least, there should be a single file which demonstrates which files do what, what data is contained in the various files, and so on. This is excruciatingly painful, but can be very important.
 
 File structure:
 
-Each project should be in a single directory. If you have multiple collaborators, they should accomplish this by working with git. If you have large raw datasets that cannot be copied across machines (e.g. with git LFS), you should figure out a server to host that data where collaborators can access it.
+Each project should be in a single directory. If you have multiple collaborators, they should accomplish this by working with git. If you have large raw datasets that cannot be copied across machines (e.g. with git LFS), you should figure out a server that can host the data where collaborators can access it.
 
 Multiple projects:
 
