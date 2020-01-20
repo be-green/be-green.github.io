@@ -37,27 +37,27 @@ Let's start with principles:
 
 1. Never touch your raw data directly
 
-This means save it in a well-known format that is consistent across operating systems, like a .csv or .txt file. If you are feeling ambitious, consider using a lightweight SQL implementation like [sqlite](https://sqlite.org/index.html).
+    This means save it in a well-known format that is consistent across operating systems, like a .csv or .txt file. If you are feeling ambitious, consider using a lightweight SQL implementation like [sqlite](https://sqlite.org/index.html).
 
 2. Assert and check expectations about your data
 
-If you have a very long and complicated process for transforming your data that involves merging multiple datasets together, dropping certain observations, etc., then assert at each stage what the data should look like. For example, which column(s) do you expect to uniquely identify the samples? Once you know that, you can write tests which run every time you run your build process. As you make changes or add additional filters, this will catch mistakes before they cascade too long.
+    If you have a very long and complicated process for transforming your data that involves merging multiple datasets together, dropping certain observations, etc., then assert at each stage what the data should look like. For example, which column(s) do you expect to uniquely identify the samples? Once you know that, you can write tests which run every time you run your build process. As you make changes or add additional filters, this will catch mistakes before they cascade too long.
 
 3. Have a process that builds to the analysis from scratch
 
-Once you have your data in a format that you want to begin your analysis, write that build process down in the order that it happens. At the simplest end, you could have a script which sources your build scripts and tests in order, outputting the processed files you need for your analysis.
+    Once you have your data in a format that you want to begin your analysis, write that build process down in the order that it happens. At the simplest end, you could have a script which sources your build scripts and tests in order, outputting the processed files you need for your analysis.
 
 4. Work with working directories
 
-Never hard-code filepaths. Ever.
+    Never hard-code filepaths. Ever.
 
 5. Visual checks are always faster
 
-Have plots that regularly visualize your raw data at intermediate steps to help diagnose problems. I particularly like histograms for this purpose, but this is likely context specific.
+    Have plots that regularly visualize your raw data at intermediate steps to help diagnose problems. I particularly like histograms for this purpose, but this is likely context specific.
 
 6. Use real version control
 
-Whether this is git or perforce or SVN or whatever, version control your project! No, this does not mean saving model_v2.py.
+    Whether this is git or perforce or SVN or whatever, version control your project! No, this does not mean saving model_v2.py.
 
 # Research as a pipeline
 
