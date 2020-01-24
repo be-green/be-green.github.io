@@ -11,4 +11,3 @@ Posterior distributions represent the "generative" model for the phenomenon. For
 To determine what type of point estimate we want to move forward with (in this case those estimates directly represent potential portfolio weights), we need to define a utility or loss function (a loss function being a negative utility function). Then we pick the estimate that maximizes utility.
 
 Most loss functions will not have a closed-form solution, but there are a few important ones that do.
-

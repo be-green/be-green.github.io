@@ -7,9 +7,9 @@ title: An Uninformative Post on Priors
 
 As a largely self-taught statistician, after some time practicing both frequentist and Bayesian methods of inference, I find myself increasingly drawn to the notion that we (as people) _always_ have some form of information about the problem at hand. This is not to say we know anything quite strong, but in any problem there are a class of parameter values which we would reject out of hand. And if we really believe ourselves to be uninformed, it might be better to think about it for a while.
 
-This is to say, if I were to run an OLS regression and get back a $\beta$ estimate of 2,000, I would simply think that I had done something wrong. And if I had not, without further evidence I would be inclined to think that this was merely a product of a very strange selection of sample for the estimate or that there is something that I have failed to include in my model. Just to make sure this looks strange, I might simulate a bunch of data given the data generating process
+This is to say, if I were running OLS regression of a security against a market cap weighted index and get back a $\beta$ estimate of 2,000, I would simply think that I had done something wrong. And if I had not, without further evidence I would be inclined to think that this was merely a product of a very strange selection of sample for the estimate or that there is something that I have failed to include in my model. Just to make sure this looks strange, I might simulate a bunch of data given the data generating process
 
-$$R_t = \alpha + \beta X_t + \epsilon_t $$
+$R_t = \alpha + \beta X_t + \epsilon_t$
 
 which would give me egregiously large returns relative to my best understanding.
 
