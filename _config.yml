@@ -3,6 +3,7 @@ title:          Brice Green's Blog
 description:    "Economist, developer, musician"
 baseurl:        ""
 url:            "https://be-green.github.io"
+timezone: "America/New_York"
 
 # Author
 author:
