@@ -4,7 +4,7 @@ title: Automatic queries with the WRDS package
 tags: finance, R
 ---
 
-I recently built a teeny R package for handling data from Wharton Research Data Services' back-end database to make it easier to work with.
+I recently built a teeny R package for handling data from Wharton Research Data Services' back-end database to make it easier to work with (package [here](https://github.com/be-green/wrds)).
 
 # The problem
 
