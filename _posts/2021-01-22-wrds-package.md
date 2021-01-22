@@ -10,7 +10,9 @@ I recently built a teeny R package for handling data from Wharton Research Data 
 
 I've been working on some projects that require daily or monthly updates with data from [Wharton Research Data Services](https://wrds-www.wharton.upenn.edu/). In finance, WRDS is a ubiquitous data provider for academic research; it has mutual fund information, security data from CRSP, firm information from Compustat, and a whole bunch of other stuff.
 
-However, the primary way they suggest you automatically pull data is through SAS Studio, which is essentially a SAS installation on their server. If you want to batch stuff, you have to kick off jobs on their server by saving a SAS script locally to their server, ssh-ing in on a scheduled basis, and kicking it off with qsas (praying that your timing doesn't break). There might be smarter ways to do this, but they are probably all a pain. That is currently what I do to generate the visualizations for the [website examining the impact of supply-side COVID disruptions on financial markets](https://www.thecovidfactor.org/). But that has a lot of issues.
+However, the primary way they suggest you automatically pull data is through SAS Studio, which is essentially a SAS installation on their server. If you want to batch stuff, you have to kick off jobs on their server by saving a SAS script locally to their server, ssh-ing in on a scheduled basis, and kicking it off with qsas (praying that your timing doesn't break).[^1] This workflow is currently what I use to generate the visualizations for the [website examining the impact of supply-side COVID disruptions on financial markets](https://www.thecovidfactor.org/).
+
+[^1]:There are definitely smarter ways to do this, but this is my attempt at avoiding this issue altogether
 
 - You have to use SAS. 
 - There is a space limit on your user directory.
