@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Quantile Spacings/Missing Data</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Brice Green" />
+    <meta name="date" content="2021-03-29" />
+    <script src="simulation-writeup_files/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Quantile Spacings/Missing Data
+### Brice Green
+### 2021-03-29
+
+---
+
+
+
+
+
+
+
+## General Approach
+
+- Fit quantile model using median + spacings
+- Interpolate fitted quantiles with cubic splines
+- Use the fitted density to simulate new draws from data
+
+---
+## General Approach
+
+- Fit quantile model using median + spacings
+- Interpolate fitted quantiles with cubic splines
+- Use the fitted density to simulate new draws from data
+
+## Open Questions
+
+- How should we select variables to enter the model?
+- How do we evaluate the model relative to other candidates?
+- What does the end product look like?
+
+---
+## General Approach
+
+- Fit quantile model using median + spacings
+- Interpolate fitted quantiles with cubic splines
+- Use the fitted density to simulate new draws from data
+
+## Open Questions
+
+- How should we select variables to enter the model?
+- How do we evaluate the model relative to other candidates?
+- What does the end product look like?
+
+## Roadmap
+
+- Code &amp; Interface Updates
+- Initial Simulation Approach and Results
+
+---
+class: center, middle, inverse
+# The Code
+
+---
+## The quantspace package
+
+- Package is currently [on github](https://github.com/be-green/quantspace)
+- Updated features:
+  - Formula interface
+  - Flexible back-end (will take any function that fits quantiles)
+  - Clean interpolation interface
+  - Unit testing (still WIP)
+  - Automated predictive methods
+  - Readme documentation
+  - Lots of small bug-fixes
+  - More parallelization
+- Roadmap (in no particular order):
+  - Marginal effects interface and plots
+  - WAY MORE unit tests
+  - Delta-method Standard Errors
+  - Detailed walkthroughs in the form of vignettes
+  - Integrate C++ spline routines for speed
+  - Formula interface that allows different models by quantile
+
+---
+## Ok, but what's useful for us?
+The flexible back-end (finished ~3 days ago) means that we can easily integrate new algorithms!
+
+Thoughts/findings so far:
+1. ML people call check functions a "pinball loss" and it is integrated into tensorflow
+2. There are lots of people who use tree-based algorithms for this stuff
+3. Penalized linear regression would also be easy to add
+
+Further issues:
+1. Hyperparameter tuning would need to be done somehow
+2. Bootstrapping + penalties gets confusing (as we discussed before)
+3. Speed might be a problem with more complicated models
+
+---
+## Ok, but what's useful for us?
+
+We want access to rng from the fitted model for new observations. This is now surfaced automatically!
+
+
+```r
+library(quantspace)
+
+data(diamonds, package = "ggplot2")
+
+fit &lt;- qs(log(price) ~ carat, data = head(diamonds, 400), parallel = F)
+
+de &lt;- distributional_effects(fit, newdata = tail(diamonds, 5))
+
+# de$r() is a random-number generator
+# generates 5 draws from the fitted distribution 
+# for the whole dataset passed as new data!
+de$r(5)
+```
+
+```
+##          [,1]     [,2]     [,3]     [,4]     [,5]
+## [1,] 7.946333 7.949400 7.988940 7.685376 8.009131
+## [2,] 7.983848 7.395845 7.745798 7.977986 7.411216
+## [3,] 7.696126 7.964544 7.871179 7.920753 7.577870
+## [4,] 7.835225 8.433708 7.578751 8.499131 8.492627
+## [5,] 7.997283 8.086907 8.096491 8.090595 7.582678
+```
+
+---
+## Ok, but what's useful for us?
+
+It also makes evaluating the the fitted density easy.
+
+
+```r
+# evaluate the pdf
+de$pdf(7)
+```
+
+```
+## [1] 0.14316868 0.14316868 0.17190148 0.04890476 0.11007119
+```
+
+```r
+# evaluate the cdf
+de$cdf(7)
+```
+
+```
+## [1] 0.03894105 0.03894105 0.04678498 0.01445345 0.03012125
+```
+
+
+```r
+# evaluate the quantile function
+de$q(0.5)
+```
+
+```
+## [1] 7.888240 7.888240 7.811514 8.425321 8.003329
+```
+
+---
+
+class: center, middle, inverse
+# Simulation Results
+
+---
+
+## The Experiment
+
+- Benchmark against OLS, since that is the default
+- Test a wide variety of specifications 
+  - exponentially increasing number of observations (N)
+  - linearly increasing dimension (K)
+- Evaluate models based on log-score, out of sample w/ same DGP
+  - Let `\(\theta\)` be the model's parameters
+  - Then the log score is `\(\Sigma \log(P(Y | \theta))\)` or the sum of the likelihood of seeing the data conditional on the model's predictions
+  - Also perform visual checks to inspect model fit
+- 6 tested DGPs:
+  - Linear model, 3 errors types
+    - Gaussian
+    - Student T (df = 3)
+    - Asymmetric errors (bigger right tail, smaller left tail)
+  - Linear model in the mean, but errors depend on X
+    - Same error types, but scaled by `\(\beta \sin(X)\)`
+    - This was chosen arbitrarily to get impacts of X on the tails
+    - `\(\beta\)` is the same beta as on the mean
+  - In each case, the means of the X variables, their covariance, and their `\(\beta\)`s are simulated fresh
+
+---
+## Results
+
+- The quantile spacings model dominates OLS in all cases except small N, large K with Gaussian errors and no dependence
+- In the cases where N &gt; 100, the quantile spacings model is almost identical to the Gaussian one
+- When the Gaussian model does poorly, the quantile model still does quite well
+- Quantile spacings are slower, but not unreasonably slow, even with ~10,000 observations (my laptop only has 12 GB memory, 4 cores)
+  - With more cores this has the potential to be much faster since the distribution fitting is embarrassingly parallel
+  
+---
+## Gaussian Model, In Sample
+![Gaussian Model, N = 1000, K = 13](fitted-density-comparison-plots/in-sample_k=23,n=1000,error distribution=gaussian.png)
+
+
+---
+## Gaussian Model, Out of Sample
+![Gaussian Model, N = 1000, K = 13](fitted-density-comparison-plots/out-of-sample_k = 23, n = 1000,error distribution = gaussian.png)
+
+
+---
+## Student Model, big K
+
+![Student T Model, N = 1000, K = 3](fitted-density-comparison-plots/out-of-sample_k = 23, n = 1000,error distribution = student.png)
+
+
+---
+## Asymmetric Model, big K
+
+![Asymmetric Model, N = 1000, K = 23](fitted-density-comparison-plots/out-of-sample_k = 23, n = 1000,error distribution = asymmetric.png)
+
+
+---
+## Asymmetric Model, small K
+
+![Asymmetric Model N = 500, K = 3](fitted-density-comparison-plots/out-of-sample_k = 3, n = 500,error distribution = asymmetric.png)
+---
+## Gaussian Model, tail effects, small K
+![Gaussian Model, N = 1000, K = 3](fitted-density-comparison-plots/in-sample_k=3,n=1000,error distribution=sinx-gaussian.png)
+
+---
+## Asymmetric Model, tail effects, small K
+![Asymmetric Model, N = 1000, K = 3](fitted-density-comparison-plots/in-sample_k=3,n=1000,error distribution=sinx-asymmetric.png)
+---
+## Asymmetric Model, tail effects, big K
+![Asymmetric Model, N = 1000, K = 13](fitted-density-comparison-plots/in-sample_k=13,n=1000,error distribution=sinx-asymmetric.png)
+
+---
+### All comparisons, out of sample log score by model
+![All comparisons, log score diffs by model](log-score-differences.png)
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"slideNumberFormat": "%current%",
+"highlightStyle": "solarized-dark",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
