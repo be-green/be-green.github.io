@@ -123,11 +123,11 @@ de$r(5)
 
 ```
 ##          [,1]     [,2]     [,3]     [,4]     [,5]
-## [1,] 7.946333 7.949400 7.988940 7.685376 8.009131
-## [2,] 7.983848 7.395845 7.745798 7.977986 7.411216
-## [3,] 7.696126 7.964544 7.871179 7.920753 7.577870
-## [4,] 7.835225 8.433708 7.578751 8.499131 8.492627
-## [5,] 7.997283 8.086907 8.096491 8.090595 7.582678
+## [1,] 7.950540 7.987566 7.934257 7.972070 7.978347
+## [2,] 7.590636 7.690192 7.476627 7.971045 7.032248
+## [3,] 7.102433 7.659687 7.672485 7.611940 7.699508
+## [4,] 8.156751 7.505050 8.496866 8.494193 8.495830
+## [5,] 8.064668 8.098812 7.974084 8.090884 8.088538
 ```
 
 ---
@@ -172,25 +172,24 @@ class: center, middle, inverse
 ---
 
 ## The Experiment
-
 - Benchmark against OLS, since that is the default
 - Test a wide variety of specifications 
   - exponentially increasing number of observations (N)
   - linearly increasing dimension (K)
 - Evaluate models based on log-score, out of sample w/ same DGP
   - Let `\(\theta\)` be the model's parameters
-  - Then the log score is `\(\Sigma \log(P(Y | \theta))\)` or the sum of the likelihood of seeing the data conditional on the model's predictions
-  - Also perform visual checks to inspect model fit
-- 6 tested DGPs:
-  - Linear model, 3 errors types
-    - Gaussian
-    - Student T (df = 3)
-    - Asymmetric errors (bigger right tail, smaller left tail)
-  - Linear model in the mean, but errors depend on X
-    - Same error types, but scaled by `\(\beta \sin(X)\)`
-    - This was chosen arbitrarily to get impacts of X on the tails
-    - `\(\beta\)` is the same beta as on the mean
-  - In each case, the means of the X variables, their covariance, and their `\(\beta\)`s are simulated fresh
+  - The log score is `\(\Sigma \log(P(Y | \theta))\)` or the sum of the log likelihood conditional on the model
+
+Tests:
+- Linear model, 3 errors types
+  * Gaussian
+  * Student T (df = 3)
+  * Asymmetric errors (bigger right tail, smaller left tail)
+- Linear model in the mean, but error scale depends on X
+  * Same error types, but scaled by `\(\beta \sin(X)\)`
+  * This was chosen arbitrarily to get impacts of X on the tails
+  * `\(\beta\)` is the same beta as on the mean
+- In each case, the means of the X variables, their covariance, and their `\(\beta\)`s are simulated fresh
 
 ---
 ## Results
