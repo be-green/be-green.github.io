@@ -14,27 +14,23 @@ I enjoy playing music and cooking, and I have two adorable cats.
 ## Software
 
 ### My stuff
+- [fqr](https://github.com/be-green/fqr): 
 - [wrds](https://github.com/be-green/wrds): an R package for reliably connecting to the  Wharton Research Data Services back-end database, working directly with tables via SQL and dbplyr
 - [quantspace](https://github.com/be-green/quantspace): an R package which helps to estimate distributional effects without quantile crossings, allowing full distributional forecasts
-- [shinyrd](https://github.com/be-green/shinyrd): a package for a packaged, interactive multiverse analysis with regression discontinuity designs (very much a work in progress)
 
 ### Stuff I help with sometimes
 - [baggr](https://github.com/wweicek/baggr): an R package for Bayesian meta-analysis models using Stan
 
-### Retired (for now)
-- [sec-filings](https://github.com/be-green/sec-filings): a prototype SEC filings parser for working with mutual fund filings
-
 ## Papers
 
-### Stuff I work on when I have time
-- Dynamic regularization and asset pricing tests
-- Interactivity, private data, and multiverse analysis
+### Works in Progress
+- Improving Missing Data Interpolation with Quantile Regression
 
 ### Research from my time in industry 
 - [Multilevel Models and the Cross-Section of Stock Returns](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3411358)
 
 # Skills
 
-Software: R, Python, Stata, Stan
+Software: R, Python, C++, Stan, Stata
 
 Music: piano, saxophone, guitar (kind of), arranging & composition
