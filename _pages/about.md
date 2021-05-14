@@ -14,7 +14,7 @@ I enjoy playing music and cooking, and I have two adorable cats.
 ## Software
 
 ### My stuff
-- [fqr](https://github.com/be-green/fqr): 
+- [fqr](https://github.com/be-green/fqr): an R package which implements a fast algorithm (using the C++ Armadillo library) for quantile regression well-suited to large problems
 - [wrds](https://github.com/be-green/wrds): an R package for reliably connecting to the  Wharton Research Data Services back-end database, working directly with tables via SQL and dbplyr
 - [quantspace](https://github.com/be-green/quantspace): an R package which helps to estimate distributional effects without quantile crossings, allowing full distributional forecasts
 
