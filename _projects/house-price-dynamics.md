@@ -1,5 +1,5 @@
 ---
-name: House Price Dynamics
+name: Credit Constraints and House Price Dynamics
 status: Early stage
 ---
 
