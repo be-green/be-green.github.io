@@ -20,8 +20,9 @@ $default-color: $base2;
     background-color:$rebase03;
     color:$rebase0;
     * { color:$rebase0; }
-    h1,h2,h3,h4,h5,h6 { color:$rebase1; border-color: $rebase0; }
-    a, a:active, a:visited { color: $rebase1; }
+    h1 { color:$rebase2; border-color: $rebase0; }
+    h2,h3,h4,h5,h6 { color:$rebase1; border-color: $rebase0; }
+    a, a:active, a:visited { color: $magenta; }
 }
 @mixin accentize($accent) {
     a, a:active, a:visited, code.url { color: $accent; }
@@ -74,7 +75,7 @@ h6 {
 }
 
 a {
-  color: $blue;
+  color: $magenta;
   text-decoration: none;
 }
 
