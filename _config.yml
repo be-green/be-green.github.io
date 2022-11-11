@@ -1,14 +1,14 @@
 # Site settings
-title:          Brice Green's Blog
+title:          Brice Green
 description:    "Economist, developer, musician"
 baseurl:        ""
-url:            "https://be-green.github.io"
+url:            "brice.green/"
 timezone: "America/New_York"
 
 # Author
 author:
   name:         Brice
-  url:          https://be-green.github.io
+  url:          brice.green
   email:        brice.c.green@gmail.com
   github:       github.com/be-green
 
@@ -16,6 +16,9 @@ author:
 markdown:       kramdown
 include:
   - _pages
+
+collections:
+  - schools
 
 # Assets
 sass:
