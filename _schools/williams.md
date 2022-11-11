@@ -2,6 +2,8 @@
 name: Williams College
 location: Williamstown, MA
 major: Music, Economics
+degree: BA
+year: 2015
 ---
 
-At Williams I studied music and economics.
+

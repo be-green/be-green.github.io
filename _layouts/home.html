@@ -2,20 +2,87 @@
 layout: default
 ---
 
+<br>
+
+Hi! My name is Brice, and I am currently a PhD student in finance at MIT. I am interested in all sorts of things, but right now I'm really curious about:
+
+<ul>
+  <li>Modeling financial decisions over space and time</li>
+  <li>Local measurement of macroeconomic variables</li>
+  <li>House price dynamics</li>
+  <li>The value of innovation to companies and the associated risks for workers</li>
+  <li>(Spatial) labor market risk and implications for asset prices</li>
+  <li>Understanding the distributional effects of policies, modeling heterogeneity</li>
+  <li>Modeling missing data & representing uncertainty</li>
+  <li>Bayesian empirical asset pricing</li>
+</ul> 
+
+<h1>Research Projects</h1>
+
 <div class = "catalogue">
-{% for school in site.schools %}
-      <div>
-        <h2 class="res_header">{{ school.name }}</h2>
-        <div class="catalogue-line"></div>
+  {% for project in site.projects %}
+        <div>
+          <h2 class="res_header">{{ project.name }} {% if project.link %}<a href = {{project.link}}>(Link)</a></h2>{% endif %}
+          <h3>Status: {{project.status}}</h3>
+          {% if project.collaborators %}
+          <h3>Joint with {{project.collaborators}}</h3>
+          {% endif %}
 
-        <h3>{{ school.location }}</h3>
-        <h3>Major: {{ school.major }}</h3>
-
-        <p>
-          {{ school.content | markdownify }}
-        </p>
-
-      </div>
-    </a>
-{% endfor %}
+          <div class="catalogue-line"></div>
+          <p>
+            {{ project.content | markdownify }}
+          </p>
+  
+        </div>
+      </a>
+  {% endfor %}
 </div>
+
+
+<h1>Software</h1>
+
+<div class = "catalogue">
+  {% for code in site.code %}
+        <div>
+          <h2 class="res_header">{{ code.name }} ({{code.role}}) <a href = {{ code.link }}><i class="fa-brands fa-github"></i>
+
+          </a></h2>
+          <div class="catalogue-line"></div>
+          <p>
+            {{ code.content | markdownify }}
+          </p>
+  
+        </div>
+      </a>
+  {% endfor %}
+</div>
+
+
+<h1>Education</h1>
+
+<div class = "catalogue">
+  {% for school in site.schools %}
+        <div>
+          <h2 class="res_header">{{ school.name }}</h2>
+          <div class="catalogue-line"></div>
+  
+          <h3>{{ school.location }}</h3>
+          <h3>Degree: {{ school.degree }}</h3>
+          <h3>Subject: {{ school.major }}</h3>
+          {% if school.year %}
+          <h3>Graudated {{school.year}}</h3>
+          {% endif %}
+          <p>
+            {{ school.content | markdownify }}
+          </p>
+  
+        </div>
+      </a>
+  {% endfor %}
+  </div>
+
+
+<h1>Skills</h1>
+<p>Software: R, Python, C++, Stan, Stata</p>
+<p>Music: piano, saxophone, guitar (kind of), arranging & composition</p>
+

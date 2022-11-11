@@ -18,7 +18,12 @@ include:
   - _pages
 
 collections:
-  - schools
+  schools:
+    output: true
+  code:
+    output: true
+  projects:
+    output: true
 
 # Assets
 sass:
