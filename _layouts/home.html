@@ -2,8 +2,6 @@
 layout: default
 ---
 
-<br>
-
 Hi! My name is Brice, and I am currently a PhD student in finance at MIT. I am interested in all sorts of things, but right now I'm really curious about:
 
 <ul>
@@ -71,6 +69,8 @@ Hi! My name is Brice, and I am currently a PhD student in finance at MIT. I am i
           <h3>Subject: {{ school.major }}</h3>
           {% if school.year %}
           <h3>Graduated {{school.year}}</h3>
+          {% else %}
+          <h3>(Current)</h3>
           {% endif %}
           <p>
             {{ school.content | markdownify }}
