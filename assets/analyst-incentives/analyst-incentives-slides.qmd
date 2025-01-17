@@ -1,0 +1,637 @@
+---
+title: "Analyst Incentives"
+author: Brice Green
+format: revealjs
+editor: visual
+bibliography: biblio.bib
+---
+
+```{r opts, include = F}
+knitr::opts_chunk$set(
+  warn = F,
+  message = F,
+  echo = F
+)
+```
+
+## Motivating Questions
+
+1.  What incentives do analysts face?
+2.  How do those incentives shape analyst forecasts?
+3.  When we account for those incentives, what does that tell us about whether forecasters are rational?
+
+## Analyst Incentives
+
+In this talk, I'll focus in on the first question:
+
+-   Build new dataset of analyst promotions / demotions / exit
+
+-   Analyze relationship of these variables to standard measures of skill and herding
+
+-   Develop novel causal framework for identifying counterfactual distributions of mistakes
+
+-   Apply this framework to provide plausible causal estimates relating the distribution of forecast errors to promotions
+
+## Analyst Incentives: Results Summary
+
+-   Effects of average forecasting skill on promotion, demotion, and exit are near zero
+
+-   Deviation away from consensus is associated with lower promotion probability, holding skill constant
+
+-   Good forecasts tend to be close to consensus
+
+-   Distributional causal estimates reveal that the error distributions associated with promotion differ only in the tails
+
+## Why does this matter?
+
+-   Macroeconomics: understanding their incentives allows us to better understand important forecasts
+
+-   Organizational Economics: valuable lab to test theories of incentives (e.g. career concerns, herding)
+
+-   Accounting / Corporate Finance: analyst / manager interactions can distort firm-level investment decisions and market forecasts
+
+-   Asset pricing: news about cashflows and cashflow expectations is core to asset pricing
+
+## Literature
+
+1.  Analyst incentives and reported forecasts. Examples: Welch (2000); Hong, Kubik, and Solomon (2000); Hong and Kubik(2003); Lamont (2004)
+
+Contribution: better data, causal evidence
+
+2.  Non-linear causal inference, dosage response curves. Examples: Athey & Imbens (2006); @chernozhukov2005iv; @callaway2019quantile
+
+Contribution: a framework for distributional counterfactuals for treatments rather than outcomes
+
+## Data
+
+-   Forecasts: IBES forecasts with names (obtained via the price targets file)
+-   Outcomes: LinkedIn promotion and exit information for \~1,400 analysts
+
+## Building the Data
+
+1.  Get names from the I/B/E/S price targets file (last name, first initial)
+2.  Merge those names with CapitalIQ People Intelligence on last name, first initial
+3.  Process these names by hand, removing duplicates and false positives
+4.  Use their CapitalIQ identified employer's information and their names to merge to Revelio's LinkedIn database
+5.  Collapse into an annual panel
+
+## Building the Outcomes
+
+Revelio provides the "seniority" of a position:
+
+1.  Entry Level (Ex. Accounting Intern; Paralegal)
+2.  Junior Level (Ex. Acct. Receivable Bookkeeper; Legal Adviser)
+3.  Associate Level (Ex. Senior Tax Accountant; Attorney)
+4.  Manager Level (Ex. Account Manager; Lead Lawyer)
+5.  Director Level (Ex. Chief of Accountants; Head of Legal)
+6.  Executive Level (Ex. Managing Director, Treasury; Attorney, Partner)
+7.  Senior Executive Level (Ex. CFO; COO; CEO)
+
+## Understanding Seniority
+
+```{r include = F}
+library(data.table)
+analyst_revelio_bridge = fread("../data/processed/analyst_capiq_revelio_bridge.csv")
+promotions = fread("../data/processed/promotion_panel.csv")
+promotions[, min_year := year(enddate_school), by = user_id]
+promotions[is.na(min_year), min_year := min(year), by = user_id]
+
+setorder(promotions, user_id, year)
+
+promotions = promotions[, .(
+  leave_finance = min(leave_finance, na.rm = T),
+  change_job_category = min(change_job_category, na.rm = T),
+  seniority = max(seniority, na.rm = T),
+  min_year = min(min_year, na.rm = T),
+  promoted = max(promotion, na.rm = T)), 
+  by = c("user_id", "year")]
+
+promotions[is.infinite(promoted), promoted := NA]
+promotions[is.infinite(change_job_category), change_job_category := NA]
+promotions[is.infinite(seniority), seniority := NA]
+promotions[is.infinite(leave_finance), leave_finance := NA]
+
+setorder(promotions, user_id, year)
+promotions[, demoted := as.integer(seniority - shift(seniority) < 0), 
+           by = user_id]
+promotions[, tenure := year - min_year]
+promotions = promotions[tenure >= 0 & tenure <= 30]
+promotions[, promoted_1yr := shift(promoted, type = "lead"), by = user_id]
+promotions[, promoted_3yr := frollsum(promoted_1yr, 3, align = "left"), by = user_id]
+promotions[promoted_3yr > 0, promoted_3yr := 1]
+promotions[, promoted_5yr := frollsum(promoted_1yr, 5, align = "left"), by = user_id]
+promotions[promoted_5yr > 0, promoted_5yr := 1]
+promotions = promotions[year >= 1990]
+
+promotions = merge(analyst_revelio_bridge, promotions, by = "user_id", allow.cartesian = T)
+promotions[, lag_seniority := seniority - promoted]
+```
+
+```{r seniority_summary, message = F, warning = F}
+library(ggplot2)
+library(ggthemes)
+theme_set(theme_clean() + 
+            theme(plot.background = element_blank()))
+
+ggplot(promotions, aes(x = tenure, y = seniority)) + 
+  stat_summary() +
+  xlab("Tenure since 1st Job") +
+  ylab("Average Seniority (Ordinal Measure, 1 through 7)")
+```
+
+## Defining Promotion
+
+Promotion is defined as a positive year over year change in seniority. Denote promotion for analyst $a$ in year $t$ as
+
+$$Y^{\text{1yr}}_{a, t} = \mathbb{1}(S_{a,t} - S_{a, t-1} > 0)$$
+
+$$Y^{\text{3yr}}_{a, t} = \mathbb{1}\left(\sum_{s=0}^2 Y^{\text{1yr}}_{a, t + s} > 0\right)$$
+
+I define one- and three-year demotion analogously.
+
+## Understanding Promotion
+
+```{r}
+library(magrittr)
+prop_data = promotions[!is.na(lag_seniority)
+                       ][,
+     .N, by = lag_seniority
+   ][,.(lag_seniority, Ps = N / sum(N))] %>%
+  setorder(lag_seniority)
+
+num_promotions = promotions[,.(Pprom = sum(promoted) / .N), by = lag_seniority]
+merge(num_promotions, prop_data) %>%
+  .[!is.na(lag_seniority)] %>% 
+  ggplot(aes(x = factor(lag_seniority), y = Pprom,
+             label = paste0("(", round(Ps * 100, 2), "%)"))) +
+  geom_col(color = "black", position = "dodge") +
+  scale_y_continuous(labels = scales::percent) +
+  xlab("Revelio Seniority (S)") +
+  ylab("Probability of Promotion") +
+  scale_fill_economist() + 
+  geom_text(aes(y = Pprom + 0.01))
+```
+
+## Building the forecasting panel
+
+I consider several outcomes:
+
+-   price targets
+-   earnings per share
+-   dividend per share
+-   book value per share
+-   free cashflow
+
+I also consider horizons from one quarter through 5 years away from realization where available.
+
+## Building the forecasting panel
+
+-   Following @diether2002differences I use the unadjusted I/B/E/S forecast files
+-   Compute forecast errors, then adjust for corporate actions adjustments myself
+-   Per-share variables are normalized by price, following @de2024noise and @van2023man
+-   All variables are winsorized at the 5% level
+
+## Measuring average skill
+
+Let $a$ index analyst, $t$ index year, $q$ index quantity (e.g. EPS, DPS), $h$ index horizon, and $j$ index stock. Then
+
+$$|e_{a,t,q,h,j}| = |f_{a,t,q,h,j} - a_{a,t,q,h,j}|$$
+
+where $f$ is the forecast and $a$ is the actual. The error rank for the stock is
+
+$$r_{i,t,q,h,j} = 1 - \frac{\text{rank}(|e_{i,t,q,h,j}|) - 1}{N_{t,q,h,j} - 1}$$
+
+where $N_{t,q,h,j}$ is the number of forecasts available for the time period, quantity, horizon, and stock.
+
+## Measuring average skill
+
+The two measures of forecasting skill are:
+
+$$|e_{a,t,q,h}| = \frac{1}{N_{a,t,q,h}} \sum_{j=1}^{N_{a,t,q,h}} |e_{a,t,q,h,j}|$$
+
+and
+
+$$|r_{a,t,q,h}| = \frac{1}{N_{a,t,q,h}} \sum_{j=1}^{N_{a,t,q,h}} |r_{a,t,q,h,j}|$$
+
+## Measuring consensus differences
+
+Let $m_{s,q,h,j}$ be the mean consensus forecast on day $s$ for quantity $q$ at horizon $h$ for stock $j$. The analyst on that same day makes a forecast, $f_{s,q,h,j}$. The leave-one-out mean is computed as
+
+$$m^{loo}_{i,s,q,h,j} = \frac{N_{s,q,h,j} \times m_{s,q,h,j} - f_{s,q,h,i}}{N - 1}$$
+
+## Measuring consensus differences
+
+Deviation from consensus is measured as
+
+$$c_{i,t,q,h} = \frac{1}{N_{i,s,q,h,j}} \sum_{j=1}^{N_{i,s,q,h,j}} |f_{s,q,h,j} - m^{loo}_{i,s,q,h,j}| $$
+
+## Regression Framework
+
+Let $s$ be a measure of skill (abs. errors or rank) and $c$ be consensus deviation. $Y_{i,t+1}$ is an indicator for promotion.
+
+$$Y_{i,t+1} = \beta_1 s_{i,t,h,q} + \beta_2 c_{i,t,h,q} + Z_{i,t} + F_{i,t} + \epsilon_{i,t}$$
+
+$Z$ is a vector of controls, including the market cap of the analyst coverage at $t-1$, the tenure of the analyst at time $t$, and the average \# of analysts covering their stocks.
+
+$F_{it}$ is a battery of fixed effects: I consider seniority, year, and analyst fixed effects.
+
+::: notes
+I also consider the promotion outcomes over the next three years instead of the next year, as well as regressions which weight outcomes by the number of forecasts. Results are largely the same.
+:::
+
+## Regression Framework
+
+Reputation may matter, so I also consider specifications with 3 lags of skill and deviation from consensus
+
+$$
+\begin{aligned}
+Y_{i,t+1} &= \beta_{1,t} s_{i,t,h,q} + \beta_{1,t-1} s_{i,t-1,h,q} +  \beta_{1,t-2} s_{i,t-2,h,q} \\ & + \beta_{2,t} c_{i,t,h,q} + \beta_{2,t-1} c_{i,t-1,h,q} + \beta_{2,t-2} c_{i,t-2,h,q}  \\ &+ Z_{i,t} + F_{i,t} + \epsilon_{i,t}
+\end{aligned}
+$$
+
+## Forecasting Skill Results: 1 Year
+
+```{r promotion_1yr}
+all_regs = fread("../data/processed/reg_output.csv")
+
+all_regs[form == "promoted ~ avg_abs_err + avg_abs_con_diff" |
+           form == "promoted ~ avg_err_rank + avg_abs_con_diff"|
+           form == "promoted ~ avg_abs_err" |
+           form == "promoted ~ avg_err_rank"] %>%
+  .[rn %like% "Abso|Rank" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(outcome), cols = vars(rn), scales = 'free_y') + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Forecasting Skill Results: 1 Year
+
+```{r}
+library(patchwork)
+all_regs[form == "promoted ~ avg_abs_err + l1err + l2err + avg_abs_con_diff + l1con_diff + l2con_diff" |
+           form == "promoted ~ avg_err_rank + l1errrank + l2errrank + avg_abs_con_diff + l1con_diff + l2con_diff" |
+           form == "promoted ~ avg_abs_err + l1err + l2err" |
+           form == "promoted ~ avg_err_rank + l1errrank + l2errrank"] %>%
+  .[rn %like% "Error" & weight == "" & outcome == "EPS"] %>%
+  .[, lag := as.integer(stringr::str_extract(rn, "[0-9]"))] %>% 
+  .[is.na(lag), lag := 1] %>% 
+  .[horizon %in% c("Quarter", "1 Year")] %>% 
+  .[horizon == "Quarter", horizon := "Quarterly Earnings Forecasts"] %>% 
+  .[horizon == "1 Year", horizon := "1 Year Earnings Forecasts"] %>% 
+  .[, horizon := factor(horizon, 
+                        levels = c("Quarterly Earnings Forecasts",
+                                   "1 Year Earnings Forecasts"))] %>% 
+  .[, err_measure := fifelse(stringr::str_detect(rn,"Rank"), 
+                             "Error Rank", "Absolute Error")] %>% 
+  ggplot(aes(x = factor(lag), y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(cols = vars(horizon), rows = vars(err_measure),
+             scales = 'free_y') + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  guides(color = "none") +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Forecasting Skill Results: 3 Year
+
+```{r promotion_3yr}
+
+all_regs[form == "promoted_3yr ~ avg_abs_err + avg_abs_con_diff" |
+           form == "promoted_3yr ~ avg_err_rank + avg_abs_con_diff"|
+           form == "promoted_3yr ~ avg_abs_err" |
+           form == "promoted_3yr ~ avg_err_rank"] %>%
+  .[rn %like% "Abso|Rank" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(outcome), cols = vars(rn), scales = 'free_y') + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Forecasting Skill Results: 3 Year
+
+```{r}
+all_regs[form == "promoted_3yr ~ avg_abs_err + l1err + l2err + avg_abs_con_diff + l1con_diff + l2con_diff" |
+           form == "promoted_3yr ~ avg_err_rank + l1errrank + l2errrank + avg_abs_con_diff + l1con_diff + l2con_diff" |
+           form == "promoted_3yr ~ avg_abs_err + l1err + l2err" |
+           form == "promoted_3yr ~ avg_err_rank + l1errrank + l2errrank"] %>%
+  .[rn %like% "Error" & weight == "" & outcome == "EPS"] %>%
+  .[, lag := as.integer(stringr::str_extract(rn, "[0-9]"))] %>% 
+  .[is.na(lag), lag := 1] %>% 
+  .[horizon %in% c("Quarter", "1 Year")] %>% 
+  .[horizon == "Quarter", horizon := "Quarterly Earnings Forecasts"] %>% 
+  .[horizon == "1 Year", horizon := "1 Year Earnings Forecasts"] %>% 
+  .[, horizon := factor(horizon, 
+                        levels = c("Quarterly Earnings Forecasts",
+                                   "1 Year Earnings Forecasts"))] %>% 
+  .[, err_measure := fifelse(stringr::str_detect(rn,"Rank"), 
+                             "Error Rank", "Absolute Error")] %>% 
+  ggplot(aes(x = factor(lag), y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(cols = vars(horizon), rows = vars(err_measure),
+             scales = 'free_y') + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  guides(color = "none") +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Consensus Results: 1 Year
+
+```{r con_diff_1yr}
+all_regs[form == "promoted ~ avg_abs_err + avg_abs_con_diff"] %>%
+  .[rn %like% "Con" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(outcome)) + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Consensus Results: 1 Year
+
+```{r}
+
+all_regs[form == "promoted ~ avg_abs_err + l1err + l2err + avg_abs_con_diff + l1con_diff + l2con_diff"] %>% 
+  .[rn %like% "Con" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  .[outcome == "EPS"] %>%
+  .[, lag := stringr::str_extract(rn, "[0-9]+")] %>% 
+  .[is.na(lag), lag := 1] %>% 
+  ggplot(aes(x = lag, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(horizon)) + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = "Lag", y = NULL)
+```
+
+## Consensus Results: 3 Year
+
+```{r con_diff_3yr}
+all_regs[form == "promoted_3yr ~ avg_abs_err + avg_abs_con_diff"] %>%
+  .[rn %like% "Con" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(outcome)) + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Consensus Results: 3 Year
+
+```{r}
+
+all_regs[form == "promoted_3yr ~ avg_abs_err + l1err + l2err + avg_abs_con_diff + l1con_diff + l2con_diff"] %>% 
+  .[rn %like% "Con" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  .[outcome == "EPS"] %>%
+  .[, lag := stringr::str_extract(rn, "[0-9]+")] %>% 
+  .[is.na(lag), lag := 1] %>% 
+  ggplot(aes(x = lag, y = Estimate, ymax = ymax, ymin = ymin,
+             color = fe)) +
+  geom_pointrange(position = position_dodge(0.35)) +
+  facet_grid(rows = vars(horizon)) + 
+  theme_clean() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme(plot.background = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_economist() +
+  labs(color = NULL, x = "Lag", y = NULL)
+```
+
+## Herding and skill are related
+
+```{r}
+top = all_regs[form == "avg_abs_con_diff ~ l1con_diff + avg_abs_err" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+    .[, horizon := forcats::fct_rev(horizon)] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  .[outcome == "EPS"] %>% 
+  .[rn == "L2 Abs. Con Diff", rn := "Lag Consensus Difference"] %>% 
+  .[rn %like% "Err"] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, 
+             ymin = ymin, color = fe)) +
+  geom_errorbar(position = position_dodge(0.5)) +
+  coord_flip() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  labs(color = "") +
+  scale_color_economist() +
+  xlab("") +
+  ggtitle("Consensus deviation predicts forecast errors") +
+  guides(color = "none")
+
+bottom = all_regs[form == "avg_abs_err ~ avg_abs_con_diff + l1err" & weight == ""] %>% 
+  .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+  .[, horizon := forcats::fct_rev(horizon)] %>% 
+  .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+  .[outcome == "EPS"] %>% 
+  .[rn == "L2 Abs. Error", rn := "Lag Absolute Error"] %>% 
+  .[rn %like% "Con"] %>% 
+  ggplot(aes(x = horizon, y = Estimate, ymax = ymax, 
+             ymin = ymin, color = fe)) +
+  geom_errorbar(position = position_dodge(0.5)) +
+  coord_flip() +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal") +
+  labs(color = "") +
+  scale_color_economist() +
+  xlab("") +
+  ggtitle("Forecast errors predict consensus deviation")
+
+top / bottom
+```
+
+## Estimating Potential Treatments
+
+-   Binary outcome, $Y_{a,t} \in \{0, 1\}$
+
+-   Continuous set of treatments $e_{a,t} = \{e_{a,j,t}\}$, $e_{a,j,t} \in \mathbb{R}$
+
+-   Two periods, $t \in {0, 1}$
+
+-   Sets of potential treatments are $e_{a, t}^y = \{e_{a, t} : \mathbb{1}(G(e_{a,t}) > 0) = y\}$ for $y \in \{0,1\}$
+
+-   We want to identify the distributions of errors $e^y_{a,t}$
+
+## Potential Treatments: Estimator
+
+My estimator for each counterfactual follows @athey2006identification. Assumptions:
+
+1.  Analysts have a single index unobservable, $U_a$ that differs across people
+2.  Errors are produced by a production function $h(U, T)$ which is strictly increasing in $U$
+3.  Unobservables are independent of time given analyst: $U \perp T\ |\ A, O$, where $O$ indexes observables
+4.  Common support for unobservables across time
+
+## Potential Treatment: Estimator
+
+Let $h^y \in H^y_{a,t}$ be a production function in the set of possible production functions such that $h^y(u_a, t) \in e_{a, t}^y$.
+
+The model assumes:
+
+1.  If $h^0(u_a, 0) \in H^0_{a, 0}$ then $h^0(u_a, 1) \in H^0_{a, 1}$: this restricts the support of the set of unpromotable production functions
+2.  For a pair of analysts, $a, b$, if $h^0_a(u_a, 0) \in H^0_{a, 0}$ & $h^0_b(u_b, 0) \in H^0_{b, 0}$, then $h^0_a(u_a, 0) = h^0_b(u_a, 0)$: this says that for each pair of analysts, both would have the same errors given the same unobservable
+3.  When analyst $a$ is promoted, errors $e_{a,j,1} = h^1_a(u_a, 1)$
+
+## Constructing Counterfactuals
+
+Let $F^1_{e, a, 1}$ be the CDF of forecast errors for the promoted analyst at time $1$ and $F^0_{a, 1}$ be a *counterfactual* distribution of forecast errors such that the *same analyst* would not be promoted. By theorem 3.1 of @athey2006identification we can identify $F^0_{a,1}$:
+
+$$F^0_{e, a, 1} = F_{e, a, 0}(F^{-1}_{e,b,0}(F_{e,b,1}(e)))$$
+
+where $F^{-1}(e)$ is the inverse CDF. For each analyst / time pair, I estimate these functions with empirical CDFs.
+
+## Constructing Counterfactuals
+
+This gives us a set, $\{\hat{F}^0_{e, a,1}\}$ which we can compare, for each analyst, to $\hat{F}^1_{e,a,1}$ in the years where the analyst is promoted. Denote $\hat{F}^0_{a,t|b} \in \{\hat{F}^0_{e, a,1}\}$ the counterfactual distribution drawn from analyst $b$, and let
+
+$$\hat{Q}_{a,t|b}(q) = (\hat{F}_{a,t}^1)^{-1}(q) - (\hat{F}_{a,t|b}^0)^{-1}(q)$$
+
+be the difference in quantile $q$ for the distributions under which analyst $a$ is promoted compared to the counterfactual drawn from analyst $b$.
+
+## Constructing Counterfactuals
+
+The average difference in error quantile for the promoted analysts at quantile $q$, $Q^1(q) = E(Q_{a,t}(q) | Y_{a,t} = 1)$, where
+
+$$Q_{a,t}(q) = E(Q_{a,t|b}(q)) = E((F_{a,t}^1)^{-1}(q) - (F_{a,t|b}^0)^{-1}(q))$$
+
+which I estimate[^1] with
+
+[^1]: There are conditions on the function spaces $H^0_a$ and $H^1_a$ and smoothness conditions on the quantile functions required for this to converge properly
+
+$$\hat{Q}_{a,t}(q) = \frac{1}{N_{B_{a,t}}} \sum_{b = 1}^{B_{a,t}} (\hat{F}_{a,t}^1)^{-1}(q) - (\hat{F}_{a,t|b}^0)^{-1}(q))$$
+
+## Constructing Counterfactuals
+
+I estimate the analogue to the expected quantile "dosage" effect on the treated, $Q^1(q)$ as
+
+$$\hat{Q}^1(q) = \frac{1}{N_{A}} \sum_{a=1}^A \hat{Q}_{a,t}(q)$$
+
+Inference is done via the empirical bootstrap when sampling for $\hat{F}^0_{a,t|b}$ and the weighted bootstrap when estimating $\hat{F^y}_{a,t}$. The method is implemented in the R package `cicreverse`, available at [github.com/be-green/cicreverse](https://www.github.com/be-green/cicreverse).
+
+## Constructing Counterfactuals
+
+Empirically I consider counterfactuals who are:
+
+1.  Other analysts matched on pre-promotion seniority
+2.  in periods 1-3 years prior to the promotion-associated year
+
+Outcomes are absolute forecast errors as the measure of $e_{a,t}$ because of the monotonicity condition on $h^y_{a,t}$[^2]
+
+[^2]: Results broken out by sign are similar.
+
+## Causal Estimates
+
+```{r}
+plot_data = fread("../data/processed/cic_fit_data.csv")
+
+plot_data[horizon == "QTR", horizon := "Quarter"]
+plot_data[horizon == "1", horizon := "1 Year"]
+plot_data[, horizon := factor(horizon, levels = c("Quarter", "1 Year"))]
+
+ggplot(plot_data[what %in% c("PTG", "EPS", "FFO", "BPS", "DPS")],
+       aes(x = q, y = mean, ymax = mean + 1.96 * se,
+             ymin = mean - 1.96 * se)) +
+  geom_pointrange() +
+  theme_clean() +
+  facet_grid(what ~ horizon, scales = "free_y") +
+  ggtitle("Changes in Changes Model Estimates") +
+  ylab("Average Difference In Errors Relative to Counterfactual") +
+  xlab("Quantile")
+```
+
+## EPS Forecast Errors and Industry Exit
+
+```{r leave_finance}
+
+all_regs[form == "leave_finance ~ avg_abs_err + avg_abs_con_diff" |
+             form == "leave_finance ~ avg_err_rank + avg_abs_con_diff"|
+             form == "leave_finance ~ avg_abs_err" |
+             form == "leave_finance ~ avg_err_rank"] %>%
+    .[rn %like% "Abso|Rank" & weight == ""] %>% 
+    .[, horizon := factor(horizon, levels = c("Quarter", "1 Year", "2 Year", "3 Year"))] %>% 
+    .[, outcome := factor(outcome, levels = c("EPS", "BPS", "DPS", "FFO", "PTG"))] %>% 
+    ggplot(aes(x = horizon, y = Estimate, ymax = ymax, ymin = ymin,
+               color = fe)) +
+    geom_pointrange(position = position_dodge(0.35)) +
+    facet_grid(rows = vars(outcome), cols = vars(rn), scales = 'free_y') + 
+    theme_clean() +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    theme(plot.background = element_blank(),
+          legend.position = "bottom",
+          legend.direction = "horizontal") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_color_economist() +
+    labs(color = NULL, x = NULL, y = NULL)
+```
+
+## Conclusion
+
+-   Using a new dataset combining forecasts with promotions and demotions from LinkedIn, I study incentive structures facing equity analysts
+-   I find no average effect of forecasting skill on promotion probability
+-   I develop an approach to counterfactual causal inference focused on treatments in a case of binary outcomes
+-   Using this method, I find that tails do seem to differ, but nothing else does
+
+# References
