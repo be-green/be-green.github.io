@@ -357,40 +357,23 @@ Brice Green
 </div>
 
 </section>
-<section id="motivating-questions" class="slide level2">
-<h2>Motivating Questions</h2>
-<ol type="1">
-<li>What incentives do analysts face?</li>
-<li>How do those incentives shape analyst forecasts?</li>
-<li>When we account for those incentives, what does that tell us about whether forecasters are rational?</li>
-</ol>
-</section>
-<section id="analyst-incentives" class="slide level2">
-<h2>Analyst Incentives</h2>
-<p>In this talk, I’ll focus in on the first question:</p>
+<section id="summary" class="slide level2">
+<h2>Summary</h2>
 <ul>
-<li><p>Build new dataset of analyst promotions / demotions / exit</p></li>
-<li><p>Analyze relationship of these variables to standard measures of skill and herding</p></li>
-<li><p>Develop novel causal framework for identifying counterfactual distributions of mistakes</p></li>
+<li><p>Build new dataset of analyst promotions / demotions / exit using LinkedIn data</p></li>
+<li><p>Find that only large mistakes matter for promotion</p></li>
+<li><p>Provide evidence that herding follows from informational incentives which punish large mistakes</p></li>
+<li><p>Develop causal framework for identifying counterfactual distributions of forecast errors</p></li>
 <li><p>Apply this framework to provide plausible causal estimates relating the distribution of forecast errors to promotions</p></li>
-</ul>
-</section>
-<section id="analyst-incentives-results-summary" class="slide level2">
-<h2>Analyst Incentives: Results Summary</h2>
-<ul>
-<li><p>Effects of average forecasting skill on promotion, demotion, and exit are near zero</p></li>
-<li><p>Deviation away from consensus is associated with lower promotion probability, holding skill constant</p></li>
-<li><p>Good forecasts tend to be close to consensus</p></li>
-<li><p>Distributional causal estimates reveal that the error distributions associated with promotion differ only in the tails</p></li>
 </ul>
 </section>
 <section id="why-does-this-matter" class="slide level2">
 <h2>Why does this matter?</h2>
 <ul>
-<li><p>Macroeconomics: understanding their incentives allows us to better understand important forecasts</p></li>
-<li><p>Organizational Economics: valuable lab to test theories of incentives (e.g.&nbsp;career concerns, herding)</p></li>
-<li><p>Accounting / Corporate Finance: analyst / manager interactions can distort firm-level investment decisions and market forecasts</p></li>
-<li><p>Asset pricing: news about cashflows and cashflow expectations is core to asset pricing</p></li>
+<li><p><strong>Macroeconomics</strong>: understanding their incentives allows us to better understand important forecasts</p></li>
+<li><p><strong>Organizational Economics</strong>: valuable lab to test theories of incentives (e.g.&nbsp;career concerns, herding)</p></li>
+<li><p><strong>Accounting &amp; Corporate Finance</strong>: analyst / manager interactions can distort firm-level investment decisions and market forecasts</p></li>
+<li><p><strong>Asset pricing</strong>: news about cashflows and cashflow expectations is core to asset pricing</p></li>
 </ul>
 </section>
 <section id="literature" class="slide level2">
@@ -398,7 +381,7 @@ Brice Green
 <ol type="1">
 <li>Analyst incentives and reported forecasts. Examples: Welch (2000); Hong, Kubik, and Solomon (2000); Hong and Kubik(2003); Lamont (2004)</li>
 </ol>
-<p>Contribution: better data, causal evidence</p>
+<p>Contribution: better data, formal causal identification</p>
 <ol start="2" type="1">
 <li>Non-linear causal inference, dosage response curves. Examples: Athey &amp; Imbens (2006); <span class="citation" data-cites="chernozhukov2005iv">Chernozhukov and Hansen (<a href="#/references" role="doc-biblioref" onclick="">2005</a>)</span>; <span class="citation" data-cites="callaway2019quantile">Callaway and Li (<a href="#/references" role="doc-biblioref" onclick="">2019</a>)</span></li>
 </ol>
@@ -407,12 +390,11 @@ Brice Green
 <section id="data" class="slide level2">
 <h2>Data</h2>
 <ul>
-<li>Forecasts: IBES forecasts with names (obtained via the price targets file)</li>
+<li>Forecasts: I/B/E/S forecasts with names (obtained via the price targets file)</li>
+<li>Identifiers: CapitalIQ People Intelligence is used to link forecasts with employer information and analyst names</li>
 <li>Outcomes: LinkedIn promotion and exit information for ~1,400 analysts</li>
 </ul>
-</section>
-<section id="building-the-data" class="slide level2">
-<h2>Building the Data</h2>
+<aside class="notes">
 <ol type="1">
 <li>Get names from the I/B/E/S price targets file (last name, first initial)</li>
 <li>Merge those names with CapitalIQ People Intelligence on last name, first initial</li>
@@ -420,6 +402,307 @@ Brice Green
 <li>Use their CapitalIQ identified employer’s information and their names to merge to Revelio’s LinkedIn database</li>
 <li>Collapse into an annual panel</li>
 </ol>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="defining-promotion" class="slide level2">
+<h2>Defining Promotion</h2>
+<p>Promotion is defined as a positive year over year change in seniority, as measured by Revelio. Denote promotion for analyst <span class="math inline">\(a\)</span> in year <span class="math inline">\(t\)</span> as</p>
+<p><span class="math display">\[Y^{\text{1yr}}_{a, t} = \mathbb{1}(S_{a,t} - S_{a, t-1} &gt; 0)\]</span></p>
+<p><span class="math display">\[Y^{\text{3yr}}_{a, t} = \mathbb{1}\left(\sum_{s=0}^2 Y^{\text{1yr}}_{a, t + s} &gt; 0\right)\]</span></p>
+<p>In this talk I focus on the 1 year promotion variable.</p>
+</section>
+<section id="building-the-forecasting-panel" class="slide level2">
+<h2>Building the forecasting panel</h2>
+<ul>
+<li>Following <span class="citation" data-cites="diether2002differences">Diether, Malloy, and Scherbina (<a href="#/references" role="doc-biblioref" onclick="">2002</a>)</span> I use the unadjusted I/B/E/S forecast files, adjusting for corporate actions adjustments myself</li>
+<li>Per-share variables are normalized by price, following <span class="citation" data-cites="de2024noise">De Silva and Thesmar (<a href="#/references" role="doc-biblioref" onclick="">2024</a>)</span> and <span class="citation" data-cites="van2023man">Van Binsbergen, Han, and Lopez-Lira (<a href="#/references" role="doc-biblioref" onclick="">2023</a>)</span></li>
+<li>Forecast errors are winsorized at the 1% level</li>
+</ul>
+</section>
+<section id="measuring-average-skill" class="slide level2">
+<h2>Measuring average skill</h2>
+<p>Let <span class="math inline">\(a\)</span> index analyst, <span class="math inline">\(t\)</span> index year, <span class="math inline">\(q\)</span> index quantity (e.g.&nbsp;EPS, DPS), <span class="math inline">\(h\)</span> index horizon, and <span class="math inline">\(j\)</span> index stock. Then</p>
+<p><span class="math display">\[|e_{a,t,q,h,j}| = |f_{a,t,q,h,j} - a_{a,t,q,h,j}|\]</span></p>
+<p>where <span class="math inline">\(f\)</span> is the forecast and <span class="math inline">\(a\)</span> is the actual. The error rank for the stock is</p>
+<p><span class="math display">\[r_{i,t,q,h,j} = 1 - \frac{\text{rank}(|e_{i,t,q,h,j}|) - 1}{N_{t,q,h,j} - 1}\]</span></p>
+<p>where <span class="math inline">\(N_{t,q,h,j}\)</span> is the number of forecasts available for the time period, quantity, horizon, and stock.</p>
+</section>
+<section id="measuring-consensus-differences" class="slide level2">
+<h2>Measuring consensus differences</h2>
+<p>Let <span class="math inline">\(m_{s,q,h,j}\)</span> be the mean consensus forecast on day <span class="math inline">\(s\)</span> for quantity <span class="math inline">\(q\)</span> at horizon <span class="math inline">\(h\)</span> for stock <span class="math inline">\(j\)</span>. The analyst on that same day makes a forecast, <span class="math inline">\(f_{s,q,h,j}\)</span>.</p>
+<p><span class="math display">\[m^{loo}_{i,s,q,h,j} = \frac{N_{s,q,h,j} \times m_{s,q,h,j} - f_{s,q,h,i}}{N - 1}\]</span></p>
+<p><span class="math display">\[c_{i,t,q,h} = \frac{1}{N_{i,s,q,h,j}} \sum_{j=1}^{N_{i,s,q,h,j}} |f_{s,q,h,j} - m^{loo}_{i,s,q,h,j}| \]</span></p>
+</section>
+<section id="regression-framework" class="slide level2">
+<h2>Regression Framework</h2>
+<p>Let <span class="math inline">\(s\)</span> be a measure of skill (abs. errors or rank) and <span class="math inline">\(c\)</span> be consensus deviation. <span class="math inline">\(Y_{i,t+1}\)</span> is an indicator for promotion.</p>
+<p><span class="math display">\[Y_{i,t+1} = \beta_1 s_{i,t,h,q} + \beta_2 c_{i,t,h,q} + Z_{i,t} + F_{i,t} + \epsilon_{i,t}\]</span></p>
+<p><span class="math inline">\(Z\)</span> is a vector of controls, including the market cap of the analyst coverage at <span class="math inline">\(t-1\)</span>, the tenure of the analyst at time <span class="math inline">\(t\)</span>, and the average # of analysts covering their stocks.</p>
+<p><span class="math inline">\(F_{it}\)</span> is a battery of fixed effects: I consider seniority, year, and analyst fixed effects.</p>
+</section>
+<section id="average-forecasting-skill" class="slide level2">
+<h2>Average Forecasting Skill</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/promotion_1yr-1.png" width="960" class="r-stretch"></section>
+<section id="consensus-deviations" class="slide level2">
+<h2>Consensus Deviations</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/con_diff_1yr-1.png" width="960" class="r-stretch"></section>
+<section id="consensus-deviations-lag-controls" class="slide level2">
+<h2>Consensus Deviations, Lag Controls</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
+<section id="are-there-differences-at-all" class="slide level2">
+<h2>Are there differences at all?</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/cdf_differences-1.png" width="960" class="r-stretch"></section>
+<section id="there-are-tail-differences" class="slide level2">
+<h2>There are tail differences…</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"><aside class="notes">
+<p>This is not controlling for consensus, and is sensitive to including coverage market capitalization controls.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="until-you-control-for-herding" class="slide level2">
+<h2>…until you control for herding</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-3-1.png" width="960" class="r-stretch"></section>
+<section id="herding-predicts-mistakes" class="slide level2">
+<h2>Herding predicts mistakes</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-4-1.png" width="960" class="r-stretch"></section>
+<section id="herding-shrinks-tails" class="slide level2">
+<h2>Herding shrinks tails</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-5-1.png" width="960" class="r-stretch"></section>
+<section id="is-herding-a-bad-control" class="slide level2">
+<h2>Is herding a bad control?</h2>
+<p>Two conceptual models of herding:</p>
+<ol type="1">
+<li>The Implicit Model: Consensus forecasts have information, an incentives encourage them to take advantage of that information</li>
+<li>The Credit Model: An analyst gets more credit for out of consensus forecasts, so herding is an explicit part of the incentive scheme</li>
+</ol>
+</section>
+<section id="the-implicit-model" class="slide level2">
+<h2>The implicit model</h2>
+
+<img data-src="images/implicit-incentive-dag.svg" class="r-stretch"></section>
+<section id="the-credit-model" class="slide level2">
+<h2>The credit model</h2>
+
+<img data-src="images/credit-model-dag.svg" class="r-stretch"></section>
+<section id="no-evidence-for-credit-model" class="slide level2">
+<h2>No evidence for credit model</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-6-1.png" width="960" class="r-stretch"><aside class="notes">
+<ul>
+<li>Credit model implies a sign relationship on the interaction for errors and consensus</li>
+<li>As you get out of consensus, errors matter more</li>
+<li>To test: break errors into 3 buckets based on percentiles away from / closer to consensus</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="issues-with-quantile-estimates" class="slide level2">
+<h2>Issues with quantile estimates</h2>
+<ol type="1">
+<li>Low power: low-probability binary outcome with continuous predictor</li>
+<li>Arbitrary: I am just picking some quantiles and using them as predictors</li>
+<li>Nonlinearity: unobservables may impact different quantiles differently, which makes an “analyst fixed effect” hard to identify</li>
+<li>No causal model: not obvious that we can interpret this as a kind of ATT in the same way as a TWFE / DiD</li>
+</ol>
+</section>
+<section id="reversing-the-question" class="slide level2">
+<h2>Reversing the question</h2>
+<p>We have a lot of power analyzing the distributions of <em>errors</em>!</p>
+<ul>
+<li>Many forecasts, per analyst, per year</li>
+<li>See each analyst over time</li>
+<li>See many other analysts we can use as controls</li>
+</ul>
+<p>I use a non-parametric estimator to characterize the full set of counterfactual distributions of errors.</p>
+<aside class="notes">
+<p>I consider counterfactual treatments: distributions of forecast errors that would lead the same analyst to not be promoted. This is obvious a set-valued object, but we can sample many times from that set since we have many counterfactual analysts. I apply the athey &amp; imbens changes in changes estimator to analyze differences in the quantiles of the forecast distributions that lead to promotion relative to those who don’t, holding analyst unobservables fixed. These unobservables can enter in potentially non-linear ways.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="the-setup" class="slide level2">
+<h2>The setup</h2>
+<ul>
+<li><p>Binary outcome, <span class="math inline">\(Y_{a,t} \in \{0, 1\}\)</span></p></li>
+<li><p>Continuous set of treatments <span class="math inline">\(e_{a,t} = \{e_{a,j,t}\}\)</span>, <span class="math inline">\(e_{a,j,t} \in \mathbb{R}\)</span></p></li>
+<li><p>Two periods, <span class="math inline">\(t \in {0, 1}\)</span></p></li>
+<li><p>Sets of potential treatments are <span class="math inline">\(e_{a, t}^y = \{e_{a, t} : \mathbb{1}(G(e_{a,t}) &gt; 0) = y\}\)</span> for <span class="math inline">\(y \in \{0,1\}\)</span></p></li>
+<li><p>We want to identify the distributions of errors <span class="math inline">\(e^y_{a,t}\)</span></p></li>
+</ul>
+<aside class="notes">
+<p>As with any causal inference problem, we only observe an observation of <span class="math inline">\(y = 1\)</span> or <span class="math inline">\(y = 0\)</span> for a given analyst at a given time. The trick is how we go about constructing a reasonable counterfactual for something the analyst <em>would have done</em> in a world where they do not get promoted.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="potential-treatments-estimator" class="slide level2">
+<h2>Potential Treatments: Estimator</h2>
+<p>My estimator for each counterfactual follows <span class="citation" data-cites="athey2006identification">Athey and Imbens (<a href="#/references" role="doc-biblioref" onclick="">2006</a>)</span>. Assumptions:</p>
+<ol type="1">
+<li>Analysts have a single index unobservable, <span class="math inline">\(U_a\)</span> that differs across people</li>
+<li>Errors are produced by a production function <span class="math inline">\(h(U, T)\)</span> which is strictly increasing in <span class="math inline">\(U\)</span></li>
+<li>Unobservables are independent of time given analyst: <span class="math inline">\(U \perp T\ |\ A, O\)</span>, where <span class="math inline">\(O\)</span> indexes observables</li>
+<li>Common support for unobservables across time</li>
+</ol>
+</section>
+<section id="potential-treatments-estimator-1" class="slide level2">
+<h2>Potential Treatments: Estimator</h2>
+<p>Let <span class="math inline">\(h^y \in H^y_{a,t}\)</span> be a production function in the set of possible production functions such that <span class="math inline">\(h^y(u_a, t) \in e_{a, t}^y\)</span>.</p>
+<p>The model assumes:</p>
+<ol type="1">
+<li>If <span class="math inline">\(h^0(u_a, 0) \in H^0_{a, 0}\)</span> then <span class="math inline">\(h^0(u_a, 1) \in H^0_{a, 1}\)</span>: this restricts the support of the set of unpromotable production functions</li>
+<li>For a pair of analysts, <span class="math inline">\(a, b\)</span>, if <span class="math inline">\(h^0_a(u_a, 0) \in H^0_{a, 0}\)</span> &amp; <span class="math inline">\(h^0_b(u_b, 0) \in H^0_{b, 0}\)</span>, then <span class="math inline">\(h^0_a(u_a, 0) = h^0_b(u_a, 0)\)</span>: this says that for each pair of analysts, both would have the same errors given the same unobservable</li>
+<li>When analyst <span class="math inline">\(a\)</span> is promoted, errors <span class="math inline">\(e_{a,j,1} = h^1_a(u_a, 1)\)</span></li>
+</ol>
+</section>
+<section id="constructing-counterfactuals" class="slide level2">
+<h2>Constructing Counterfactuals</h2>
+<p>Let <span class="math inline">\(F^1_{e, a, 1}\)</span> be the CDF of forecast errors for the promoted analyst at time <span class="math inline">\(1\)</span> and <span class="math inline">\(F^0_{a, 1}\)</span> be a <em>counterfactual</em> distribution of forecast errors such that the <em>same analyst</em> would not be promoted. By theorem 3.1 of <span class="citation" data-cites="athey2006identification">Athey and Imbens (<a href="#/references" role="doc-biblioref" onclick="">2006</a>)</span> we can identify <span class="math inline">\(F^0_{a,1}\)</span>:</p>
+<p><span class="math display">\[F^0_{e, a, 1} = F_{e, a, 0}(F^{-1}_{e,b,0}(F_{e,b,1}(e)))\]</span></p>
+<p>where <span class="math inline">\(F^{-1}(e)\)</span> is the inverse CDF.</p>
+<aside class="notes">
+<p>For each analyst / time pair, I estimate these functions with empirical CDFs.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="constructing-counterfactuals-1" class="slide level2">
+<h2>Constructing Counterfactuals</h2>
+<p>This gives us a set, <span class="math inline">\(\{\hat{F}^0_{e, a,1}\}\)</span> which we can compare, for each analyst, to <span class="math inline">\(\hat{F}^1_{e,a,1}\)</span> in the years where the analyst is promoted. Denote <span class="math inline">\(\hat{F}^0_{a,t|b} \in \{\hat{F}^0_{e, a,1}\}\)</span> the counterfactual distribution drawn from analyst <span class="math inline">\(b\)</span>, and let</p>
+<p><span class="math display">\[\hat{Q}_{a,t|b}(q) = (\hat{F}_{a,t}^1)^{-1}(q) - (\hat{F}_{a,t|b}^0)^{-1}(q)\]</span></p>
+<p>be the difference in quantile <span class="math inline">\(q\)</span> for the distributions under which analyst <span class="math inline">\(a\)</span> is promoted compared to the counterfactual drawn from analyst <span class="math inline">\(b\)</span>.</p>
+</section>
+<section id="constructing-counterfactuals-2" class="slide level2">
+<h2>Constructing Counterfactuals</h2>
+<p>The average difference in error quantile for the promoted analysts at quantile <span class="math inline">\(q\)</span>,</p>
+<p><span class="math display">\[QDEP(q) = E(\Delta Q_{a,t}(q) | Y_{a,t} = 1)\]</span></p>
+<p>where</p>
+<p><span class="math display">\[\Delta Q_{a,t|b}(q) = (F_{a,t}^1)^{-1}(q) - (F_{a,t|b}^0)^{-1}(q)\]</span></p>
+<p>which I estimate<sup>1</sup> with empirical analogues.</p>
+<aside><ol class="aside-footnotes"><li id="fn1"><p>There are conditions on the function spaces <span class="math inline">\(H^0_a\)</span> and <span class="math inline">\(H^1_a\)</span> and smoothness conditions on the quantile functions required for this to converge to something meaningful</p></li></ol></aside></section>
+<section id="constructing-counterfactuals-3" class="slide level2">
+<h2>Constructing Counterfactuals</h2>
+<p>I estimate the analogue to the expected quantile “dosage” effect on the treated as</p>
+<p><span class="math display">\[\widehat{QDEP}(q) = \frac{1}{N_A} \sum_{a \in A} \Delta \hat{Q}_{a,t}(q)\]</span></p>
+<p>The method is implemented in the R package <code>cicreverse</code>, available at <a href="https://www.github.com/be-green/cicreverse">github.com/be-green/cicreverse</a>.</p>
+<aside class="notes">
+<p>Inference is done via the empirical bootstrap when sampling for <span class="math inline">\(\hat{F}^0_{a,t|b}\)</span> and the weighted bootstrap when estimating <span class="math inline">\(\hat{F^y}_{a,t}\)</span>.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="constructing-counterfactuals-4" class="slide level2">
+<h2>Constructing Counterfactuals</h2>
+<p>Empirically I consider counterfactuals who are:</p>
+<ol type="1">
+<li>Other analysts matched on pre-promotion seniority</li>
+<li>in periods 1-3 years prior to the promotion-associated year</li>
+</ol>
+<p>Outcomes are absolute forecast errors as the measure of <span class="math inline">\(e_{a,t}\)</span> because of the monotonicity condition on <span class="math inline">\(h^y_{a,t}\)</span><sup>1</sup></p>
+<aside><ol class="aside-footnotes"><li id="fn2"><p>Results broken out by sign are similar.</p></li></ol></aside></section>
+<section id="differences-are-in-the-tails" class="slide level2">
+<h2>Differences are in the tails</h2>
+
+<img data-src="analyst-incentives-slides_files/figure-revealjs/cic_plot_eps-1.png" width="960" class="r-stretch"><aside class="notes">
+<p>We see nearly identical patterns for other forecast variables, possibly because the is a common cause for the errors across these outcomes. This holds for dividends, book value, free cashflow, and price targets.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="conclusion" class="slide level2">
+<h2>Conclusion</h2>
+<ul>
+<li>Using a new dataset combining forecasts with promotions and demotions from LinkedIn, I study incentive structures facing equity analysts</li>
+<li>I find no average effect of forecasting skill on promotion</li>
+<li>I develop an approach to counterfactual causal inference focused on treatments in a case of binary outcomes</li>
+<li>Depending on your causal model, there is evidence that the tails of the forecast distribution matter substantially</li>
+</ul>
+</section>
+<section id="appendix-slides" class="title-slide slide level1 center">
+<h1>Appendix Slides</h1>
+
+</section>
+
+<section>
+<section id="data-construction" class="title-slide slide level1 center">
+<h1>Data Construction</h1>
+
 </section>
 <section id="building-the-outcomes" class="slide level2">
 <h2>Building the Outcomes</h2>
@@ -438,100 +721,26 @@ Brice Green
 <h2>Understanding Seniority</h2>
 
 <img data-src="analyst-incentives-slides_files/figure-revealjs/seniority_summary-1.png" width="960" class="r-stretch"></section>
-<section id="defining-promotion" class="slide level2">
-<h2>Defining Promotion</h2>
-<p>Promotion is defined as a positive year over year change in seniority. Denote promotion for analyst <span class="math inline">\(a\)</span> in year <span class="math inline">\(t\)</span> as</p>
-<p><span class="math display">\[Y^{\text{1yr}}_{a, t} = \mathbb{1}(S_{a,t} - S_{a, t-1} &gt; 0)\]</span></p>
-<p><span class="math display">\[Y^{\text{3yr}}_{a, t} = \mathbb{1}\left(\sum_{s=0}^2 Y^{\text{1yr}}_{a, t + s} &gt; 0\right)\]</span></p>
-<p>I define one- and three-year demotion analogously.</p>
-</section>
 <section id="understanding-promotion" class="slide level2">
 <h2>Understanding Promotion</h2>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"></section>
-<section id="building-the-forecasting-panel" class="slide level2">
-<h2>Building the forecasting panel</h2>
-<p>I consider several outcomes:</p>
-<ul>
-<li>price targets</li>
-<li>earnings per share</li>
-<li>dividend per share</li>
-<li>book value per share</li>
-<li>free cashflow</li>
-</ul>
-<p>I also consider horizons from one quarter through 5 years away from realization where available.</p>
-</section>
-<section id="building-the-forecasting-panel-1" class="slide level2">
-<h2>Building the forecasting panel</h2>
-<ul>
-<li>Following <span class="citation" data-cites="diether2002differences">Diether, Malloy, and Scherbina (<a href="#/references" role="doc-biblioref" onclick="">2002</a>)</span> I use the unadjusted I/B/E/S forecast files</li>
-<li>Compute forecast errors, then adjust for corporate actions adjustments myself</li>
-<li>Per-share variables are normalized by price, following <span class="citation" data-cites="de2024noise">De Silva and Thesmar (<a href="#/references" role="doc-biblioref" onclick="">2024</a>)</span> and <span class="citation" data-cites="van2023man">Van Binsbergen, Han, and Lopez-Lira (<a href="#/references" role="doc-biblioref" onclick="">2023</a>)</span></li>
-<li>All variables are winsorized at the 5% level</li>
-</ul>
-</section>
-<section id="measuring-average-skill" class="slide level2">
-<h2>Measuring average skill</h2>
-<p>Let <span class="math inline">\(a\)</span> index analyst, <span class="math inline">\(t\)</span> index year, <span class="math inline">\(q\)</span> index quantity (e.g.&nbsp;EPS, DPS), <span class="math inline">\(h\)</span> index horizon, and <span class="math inline">\(j\)</span> index stock. Then</p>
-<p><span class="math display">\[|e_{a,t,q,h,j}| = |f_{a,t,q,h,j} - a_{a,t,q,h,j}|\]</span></p>
-<p>where <span class="math inline">\(f\)</span> is the forecast and <span class="math inline">\(a\)</span> is the actual. The error rank for the stock is</p>
-<p><span class="math display">\[r_{i,t,q,h,j} = 1 - \frac{\text{rank}(|e_{i,t,q,h,j}|) - 1}{N_{t,q,h,j} - 1}\]</span></p>
-<p>where <span class="math inline">\(N_{t,q,h,j}\)</span> is the number of forecasts available for the time period, quantity, horizon, and stock.</p>
-</section>
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
 <section id="measuring-average-skill-1" class="slide level2">
 <h2>Measuring average skill</h2>
 <p>The two measures of forecasting skill are:</p>
 <p><span class="math display">\[|e_{a,t,q,h}| = \frac{1}{N_{a,t,q,h}} \sum_{j=1}^{N_{a,t,q,h}} |e_{a,t,q,h,j}|\]</span></p>
 <p>and</p>
 <p><span class="math display">\[|r_{a,t,q,h}| = \frac{1}{N_{a,t,q,h}} \sum_{j=1}^{N_{a,t,q,h}} |r_{a,t,q,h,j}|\]</span></p>
-</section>
-<section id="measuring-consensus-differences" class="slide level2">
-<h2>Measuring consensus differences</h2>
-<p>Let <span class="math inline">\(m_{s,q,h,j}\)</span> be the mean consensus forecast on day <span class="math inline">\(s\)</span> for quantity <span class="math inline">\(q\)</span> at horizon <span class="math inline">\(h\)</span> for stock <span class="math inline">\(j\)</span>. The analyst on that same day makes a forecast, <span class="math inline">\(f_{s,q,h,j}\)</span>. The leave-one-out mean is computed as</p>
-<p><span class="math display">\[m^{loo}_{i,s,q,h,j} = \frac{N_{s,q,h,j} \times m_{s,q,h,j} - f_{s,q,h,i}}{N - 1}\]</span></p>
-</section>
-<section id="measuring-consensus-differences-1" class="slide level2">
-<h2>Measuring consensus differences</h2>
-<p>Deviation from consensus is measured as</p>
-<p><span class="math display">\[c_{i,t,q,h} = \frac{1}{N_{i,s,q,h,j}} \sum_{j=1}^{N_{i,s,q,h,j}} |f_{s,q,h,j} - m^{loo}_{i,s,q,h,j}| \]</span></p>
-</section>
-<section id="regression-framework" class="slide level2">
-<h2>Regression Framework</h2>
-<p>Let <span class="math inline">\(s\)</span> be a measure of skill (abs. errors or rank) and <span class="math inline">\(c\)</span> be consensus deviation. <span class="math inline">\(Y_{i,t+1}\)</span> is an indicator for promotion.</p>
-<p><span class="math display">\[Y_{i,t+1} = \beta_1 s_{i,t,h,q} + \beta_2 c_{i,t,h,q} + Z_{i,t} + F_{i,t} + \epsilon_{i,t}\]</span></p>
-<p><span class="math inline">\(Z\)</span> is a vector of controls, including the market cap of the analyst coverage at <span class="math inline">\(t-1\)</span>, the tenure of the analyst at time <span class="math inline">\(t\)</span>, and the average # of analysts covering their stocks.</p>
-<p><span class="math inline">\(F_{it}\)</span> is a battery of fixed effects: I consider seniority, year, and analyst fixed effects.</p>
-<aside class="notes">
-<p>I also consider the promotion outcomes over the next three years instead of the next year, as well as regressions which weight outcomes by the number of forecasts. Results are largely the same.</p>
-<style type="text/css">
-        span.MJX_Assistive_MathML {
-          position:absolute!important;
-          clip: rect(1px, 1px, 1px, 1px);
-          padding: 1px 0 0 0!important;
-          border: 0!important;
-          height: 1px!important;
-          width: 1px!important;
-          overflow: hidden!important;
-          display:block!important;
-      }</style></aside>
-</section>
-<section id="regression-framework-1" class="slide level2">
-<h2>Regression Framework</h2>
-<p>Reputation may matter, so I also consider specifications with 3 lags of skill and deviation from consensus</p>
-<p><span class="math display">\[
-\begin{aligned}
-Y_{i,t+1} &amp;= \beta_{1,t} s_{i,t,h,q} + \beta_{1,t-1} s_{i,t-1,h,q} +  \beta_{1,t-2} s_{i,t-2,h,q} \\ &amp; + \beta_{2,t} c_{i,t,h,q} + \beta_{2,t-1} c_{i,t-1,h,q} + \beta_{2,t-2} c_{i,t-2,h,q}  \\ &amp;+ Z_{i,t} + F_{i,t} + \epsilon_{i,t}
-\end{aligned}
-\]</span></p>
-</section>
-<section id="forecasting-skill-results-1-year" class="slide level2">
-<h2>Forecasting Skill Results: 1 Year</h2>
+</section></section>
+<section>
+<section id="other-regression-results" class="title-slide slide level1 center">
+<h1>Other Regression Results</h1>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/promotion_1yr-1.png" width="960" class="r-stretch"></section>
-<section id="forecasting-skill-results-1-year-1" class="slide level2">
-<h2>Forecasting Skill Results: 1 Year</h2>
+</section>
+<section id="forecasting-skill-1-year-controlling-for-lags" class="slide level2">
+<h2>Forecasting Skill, 1 Year, Controlling for Lags</h2>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-3-1.png" width="960" class="r-stretch"></section>
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-9-1.png" width="960" class="r-stretch"></section>
 <section id="forecasting-skill-results-3-year" class="slide level2">
 <h2>Forecasting Skill Results: 3 Year</h2>
 
@@ -539,108 +748,19 @@ Y_{i,t+1} &amp;= \beta_{1,t} s_{i,t,h,q} + \beta_{1,t-1} s_{i,t-1,h,q} +  \beta_
 <section id="forecasting-skill-results-3-year-1" class="slide level2">
 <h2>Forecasting Skill Results: 3 Year</h2>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-4-1.png" width="960" class="r-stretch"></section>
-<section id="consensus-results-1-year" class="slide level2">
-<h2>Consensus Results: 1 Year</h2>
-
-<img data-src="analyst-incentives-slides_files/figure-revealjs/con_diff_1yr-1.png" width="960" class="r-stretch"></section>
-<section id="consensus-results-1-year-1" class="slide level2">
-<h2>Consensus Results: 1 Year</h2>
-
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-5-1.png" width="960" class="r-stretch"></section>
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-10-1.png" width="960" class="r-stretch"></section>
 <section id="consensus-results-3-year" class="slide level2">
 <h2>Consensus Results: 3 Year</h2>
 
 <img data-src="analyst-incentives-slides_files/figure-revealjs/con_diff_3yr-1.png" width="960" class="r-stretch"></section>
-<section id="consensus-results-3-year-1" class="slide level2">
-<h2>Consensus Results: 3 Year</h2>
+<section id="consensus-results-3-year-lag-controls" class="slide level2">
+<h2>Consensus Results: 3 Year, Lag Controls</h2>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-6-1.png" width="960" class="r-stretch"></section>
-<section id="herding-and-skill-are-related" class="slide level2">
-<h2>Herding and skill are related</h2>
+<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-11-1.png" width="960" class="r-stretch"></section>
+<section id="cic-model-all-outcomes" class="slide level2">
+<h2>CIC Model: all outcomes</h2>
 
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-7-1.png" width="960" class="r-stretch"></section>
-<section id="estimating-potential-treatments" class="slide level2">
-<h2>Estimating Potential Treatments</h2>
-<ul>
-<li><p>Binary outcome, <span class="math inline">\(Y_{a,t} \in \{0, 1\}\)</span></p></li>
-<li><p>Continuous set of treatments <span class="math inline">\(e_{a,t} = \{e_{a,j,t}\}\)</span>, <span class="math inline">\(e_{a,j,t} \in \mathbb{R}\)</span></p></li>
-<li><p>Two periods, <span class="math inline">\(t \in {0, 1}\)</span></p></li>
-<li><p>Sets of potential treatments are <span class="math inline">\(e_{a, t}^y = \{e_{a, t} : \mathbb{1}(G(e_{a,t}) &gt; 0) = y\}\)</span> for <span class="math inline">\(y \in \{0,1\}\)</span></p></li>
-<li><p>We want to identify the distributions of errors <span class="math inline">\(e^y_{a,t}\)</span></p></li>
-</ul>
-</section>
-<section id="potential-treatments-estimator" class="slide level2">
-<h2>Potential Treatments: Estimator</h2>
-<p>My estimator for each counterfactual follows <span class="citation" data-cites="athey2006identification">Athey and Imbens (<a href="#/references" role="doc-biblioref" onclick="">2006</a>)</span>. Assumptions:</p>
-<ol type="1">
-<li>Analysts have a single index unobservable, <span class="math inline">\(U_a\)</span> that differs across people</li>
-<li>Errors are produced by a production function <span class="math inline">\(h(U, T)\)</span> which is strictly increasing in <span class="math inline">\(U\)</span></li>
-<li>Unobservables are independent of time given analyst: <span class="math inline">\(U \perp T\ |\ A, O\)</span>, where <span class="math inline">\(O\)</span> indexes observables</li>
-<li>Common support for unobservables across time</li>
-</ol>
-</section>
-<section id="potential-treatment-estimator" class="slide level2">
-<h2>Potential Treatment: Estimator</h2>
-<p>Let <span class="math inline">\(h^y \in H^y_{a,t}\)</span> be a production function in the set of possible production functions such that <span class="math inline">\(h^y(u_a, t) \in e_{a, t}^y\)</span>.</p>
-<p>The model assumes:</p>
-<ol type="1">
-<li>If <span class="math inline">\(h^0(u_a, 0) \in H^0_{a, 0}\)</span> then <span class="math inline">\(h^0(u_a, 1) \in H^0_{a, 1}\)</span>: this restricts the support of the set of unpromotable production functions</li>
-<li>For a pair of analysts, <span class="math inline">\(a, b\)</span>, if <span class="math inline">\(h^0_a(u_a, 0) \in H^0_{a, 0}\)</span> &amp; <span class="math inline">\(h^0_b(u_b, 0) \in H^0_{b, 0}\)</span>, then <span class="math inline">\(h^0_a(u_a, 0) = h^0_b(u_a, 0)\)</span>: this says that for each pair of analysts, both would have the same errors given the same unobservable</li>
-<li>When analyst <span class="math inline">\(a\)</span> is promoted, errors <span class="math inline">\(e_{a,j,1} = h^1_a(u_a, 1)\)</span></li>
-</ol>
-</section>
-<section id="constructing-counterfactuals" class="slide level2">
-<h2>Constructing Counterfactuals</h2>
-<p>Let <span class="math inline">\(F^1_{e, a, 1}\)</span> be the CDF of forecast errors for the promoted analyst at time <span class="math inline">\(1\)</span> and <span class="math inline">\(F^0_{a, 1}\)</span> be a <em>counterfactual</em> distribution of forecast errors such that the <em>same analyst</em> would not be promoted. By theorem 3.1 of <span class="citation" data-cites="athey2006identification">Athey and Imbens (<a href="#/references" role="doc-biblioref" onclick="">2006</a>)</span> we can identify <span class="math inline">\(F^0_{a,1}\)</span>:</p>
-<p><span class="math display">\[F^0_{e, a, 1} = F_{e, a, 0}(F^{-1}_{e,b,0}(F_{e,b,1}(e)))\]</span></p>
-<p>where <span class="math inline">\(F^{-1}(e)\)</span> is the inverse CDF. For each analyst / time pair, I estimate these functions with empirical CDFs.</p>
-</section>
-<section id="constructing-counterfactuals-1" class="slide level2">
-<h2>Constructing Counterfactuals</h2>
-<p>This gives us a set, <span class="math inline">\(\{\hat{F}^0_{e, a,1}\}\)</span> which we can compare, for each analyst, to <span class="math inline">\(\hat{F}^1_{e,a,1}\)</span> in the years where the analyst is promoted. Denote <span class="math inline">\(\hat{F}^0_{a,t|b} \in \{\hat{F}^0_{e, a,1}\}\)</span> the counterfactual distribution drawn from analyst <span class="math inline">\(b\)</span>, and let</p>
-<p><span class="math display">\[\hat{Q}_{a,t|b}(q) = (\hat{F}_{a,t}^1)^{-1}(q) - (\hat{F}_{a,t|b}^0)^{-1}(q)\]</span></p>
-<p>be the difference in quantile <span class="math inline">\(q\)</span> for the distributions under which analyst <span class="math inline">\(a\)</span> is promoted compared to the counterfactual drawn from analyst <span class="math inline">\(b\)</span>.</p>
-</section>
-<section id="constructing-counterfactuals-2" class="slide level2">
-<h2>Constructing Counterfactuals</h2>
-<p>The average difference in error quantile for the promoted analysts at quantile <span class="math inline">\(q\)</span>, <span class="math inline">\(Q^1(q) = E(Q_{a,t}(q) | Y_{a,t} = 1)\)</span>, where</p>
-<p><span class="math display">\[Q_{a,t}(q) = E(Q_{a,t|b}(q)) = E((F_{a,t}^1)^{-1}(q) - (F_{a,t|b}^0)^{-1}(q))\]</span></p>
-<p>which I estimate<sup>1</sup> with</p>
-<p><span class="math display">\[\hat{Q}_{a,t}(q) = \frac{1}{N_{B_{a,t}}} \sum_{b = 1}^{B_{a,t}} (\hat{F}_{a,t}^1)^{-1}(q) - (\hat{F}_{a,t|b}^0)^{-1}(q))\]</span></p>
-<aside><ol class="aside-footnotes"><li id="fn1"><p>There are conditions on the function spaces <span class="math inline">\(H^0_a\)</span> and <span class="math inline">\(H^1_a\)</span> and smoothness conditions on the quantile functions required for this to converge properly</p></li></ol></aside></section>
-<section id="constructing-counterfactuals-3" class="slide level2">
-<h2>Constructing Counterfactuals</h2>
-<p>I estimate the analogue to the expected quantile “dosage” effect on the treated, <span class="math inline">\(Q^1(q)\)</span> as</p>
-<p><span class="math display">\[\hat{Q}^1(q) = \frac{1}{N_{A}} \sum_{a=1}^A \hat{Q}_{a,t}(q)\]</span></p>
-<p>Inference is done via the empirical bootstrap when sampling for <span class="math inline">\(\hat{F}^0_{a,t|b}\)</span> and the weighted bootstrap when estimating <span class="math inline">\(\hat{F^y}_{a,t}\)</span>. The method is implemented in the R package <code>cicreverse</code>, available at <a href="https://www.github.com/be-green/cicreverse">github.com/be-green/cicreverse</a>.</p>
-</section>
-<section id="constructing-counterfactuals-4" class="slide level2">
-<h2>Constructing Counterfactuals</h2>
-<p>Empirically I consider counterfactuals who are:</p>
-<ol type="1">
-<li>Other analysts matched on pre-promotion seniority</li>
-<li>in periods 1-3 years prior to the promotion-associated year</li>
-</ol>
-<p>Outcomes are absolute forecast errors as the measure of <span class="math inline">\(e_{a,t}\)</span> because of the monotonicity condition on <span class="math inline">\(h^y_{a,t}\)</span><sup>1</sup></p>
-<aside><ol class="aside-footnotes"><li id="fn2"><p>Results broken out by sign are similar.</p></li></ol></aside></section>
-<section id="causal-estimates" class="slide level2">
-<h2>Causal Estimates</h2>
-
-<img data-src="analyst-incentives-slides_files/figure-revealjs/unnamed-chunk-8-1.png" width="960" class="r-stretch"></section>
-<section id="eps-forecast-errors-and-industry-exit" class="slide level2">
-<h2>EPS Forecast Errors and Industry Exit</h2>
-
-<img data-src="analyst-incentives-slides_files/figure-revealjs/leave_finance-1.png" width="960" class="r-stretch"></section>
-<section id="conclusion" class="slide level2">
-<h2>Conclusion</h2>
-<ul>
-<li>Using a new dataset combining forecasts with promotions and demotions from LinkedIn, I study incentive structures facing equity analysts</li>
-<li>I find no average effect of forecasting skill on promotion probability</li>
-<li>I develop an approach to counterfactual causal inference focused on treatments in a case of binary outcomes</li>
-<li>Using this method, I find that tails do seem to differ, but nothing else does</li>
-</ul>
-</section>
+<img data-src="analyst-incentives-slides_files/figure-revealjs/cic_plot_all-1.png" width="960" class="r-stretch"></section></section>
 <section id="references" class="title-slide slide level1 smaller scrollable">
 <h1>References</h1>
 <div class="quarto-auto-generated-content">
